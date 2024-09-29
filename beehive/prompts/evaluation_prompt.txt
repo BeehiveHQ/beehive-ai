@@ -1,0 +1,15 @@
+Assess the quality of the task completed based on the task and agent output.
+
+Here is the task:
+<task>
+{{task}}
+</task>
+
+Here is the agent output:
+<output>
+{{output}}
+</output>
+
+Please provide:
+- Bullet point suggestions to improve future similar tasks
+- A score from 0 to 10 evaluating on completion, quality, and overall performance.

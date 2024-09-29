@@ -1,0 +1,7 @@
+You participated in an ensemble with {{num_agents}} for the task listed below. A synthesizer agent (also an LLM) evaluated the responses of all of the agents (including yourself) produced the following answer:
+
+<task>{{task}}</task>
+
+<final_answer>
+{{final_answer}}
+</final_answer>

@@ -1,0 +1,7 @@
+These are the solutions to the problem from other agents:
+
+<other_agent_responses>
+{{other_agent_responses}}
+</other_agent_responses>
+
+Based off the opinion of other agents, can you give an updated response to the task: <task>{{task}}</task>

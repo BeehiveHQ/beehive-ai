@@ -1,0 +1,7 @@
+You participated in a structured debate with {{num_agents}} other agents over {{num_rounds}} rounds for the task listed below. A judge (also an LLM agent) evaluated the responses of all of the agents (including yourself) over all of the rounds and synthesized the following, final answer:
+
+<task>{{task}}</task>
+
+<final_answer>
+{{final_ansewr}}
+</final_answer>

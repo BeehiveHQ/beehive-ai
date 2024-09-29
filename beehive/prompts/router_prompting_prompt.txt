@@ -1,0 +1,16 @@
+You are an expert prompt engineer. Your goal is to craft a precise and effective prompt for an LLM.
+
+Here is backstory of the LLM for whom you will create a prompt:
+<backstory>
+{{backstory}}
+</backstory>
+
+Here is the user's original query. The prompt that you create should move us closer towards answer this query.
+<task>
+{{task}}
+</task>
+
+{# From `context_prompt` #}
+{{context}}
+
+Utilize the given information to formulate a prompt that enables the LLM to efficiently address the user task, ensuring that the prompt aligns with the LLM's capabilities and background. {{format_instructions}}

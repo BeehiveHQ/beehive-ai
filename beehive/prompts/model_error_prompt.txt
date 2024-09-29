@@ -1,0 +1,6 @@
+Your previous output caused the following error:
+<error>
+{{error}}
+</error>
+
+Do not make the same mistake when you respond.

@@ -1,0 +1,5 @@
+{# For minimizing the number of tokens used while still maintaining a coherent context #}
+Here is some context provided by previous LLM agents in the conversation. The format for this context is the same as before.
+<context>
+{{context}}
+</context>

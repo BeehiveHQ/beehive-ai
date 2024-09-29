@@ -1,0 +1,7 @@
+You participated in an ensemble {{num_agents}} other agents for the task listed below. Your and the other agents' responses were then run through a similarity score function. The response that had the highest cumulative similarity is listed below:
+
+<task>{{task}}</task>
+
+<final_answer>
+{{final_answer}}
+</final_answer>

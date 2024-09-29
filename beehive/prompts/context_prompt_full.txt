@@ -1,0 +1,9 @@
+Here is some context provided by previous LLM agents in the conversation. This context is a bulleted list, where each item represents messages created by other LLM agents in the conversation. These messages will be formatted according to the following schema:
+<schema>
+{"type": "object", "properties": {"agent_backstory": {"type": "string"}, "agent_messages": {"type": "array", "items": [{"type": "string"}]}, "agent_name": {"type": "string"}}, "required": ["agent_backstory", "agent_messages", "agent_name"]}
+</schema>
+
+Here is the context:
+<context>
+{{context}}
+</context>

@@ -1,0 +1,10 @@
+Ask clarifying questions if you are unsure of how to complete the task or need any clarification. Make sure these questions are specific and targeted. You are able to ask questions to any of the following agents: {{agent_names}}.
+
+Here are the agent descriptions:
+<agent_descriptions>
+{{agent_descriptions}}
+</agent_descriptions>
+
+{{format_instructions}}
+
+YOU DO NOT HAVE TO ASK QUESTIONS IF YOU BELIEVE YOU CAN COMPLETE THE TASK EFFECTIVELY WITHOUT CLARIFICATION. IF YOU DO NOT WANT TO ASK ANY QUESTIONS, THEN YOU DO NOT NEED TO FORMAT YOUR OUTPUT IN ANY SPECIFIC WAY.

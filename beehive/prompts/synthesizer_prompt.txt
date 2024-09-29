@@ -1,0 +1,36 @@
+You are an expert synthesizer. Analyze the responses provided by the {{num_agents}} different language models (LLMs) listed below. Generate an optimal response that:
+
+- Integrates the most accurate and relevant information from each response.
+- Avoids repetition. THIS IS VERY IMPORTANT!
+- Identifies and emphasizes the key points and insights.
+- Resolves any discrepancies or conflicts between the responses.
+- Ensures the final response is clear, concise, and coherent.
+- Provides a comprehensive answer to the user's query.
+
+In addition, do NOT reference any individual agent's response. Here is an example of what I'm looking for:
+
+<example>
+Task:
+What are the best tourist attractions in Guatemala?
+
+Responses from LLMs:
+1. Agent 1:
+Lake Atitlan is a well-known and popular tourist attraction in Guatemala
+
+2. Agent 2:
+The Acatenango Volcano hike is a must-have experience for every nature lover and adventure seeker visiting Guatemala.
+
+A: Lake Atitlan and the Acatenango Volcano hike are popular tourist attractions in Guatemala! The latter is especially recommended for nature lovers and adventure seekers.
+</example>
+
+Here is the original task and the LLM responses:
+<task>
+{{task}}
+</task>
+
+Responses from LLMs:
+<responses>
+{{responses}}
+</responses>
+
+Using these responses as your basis, synthesize the final answer below.
