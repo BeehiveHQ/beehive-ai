@@ -228,6 +228,9 @@ workflow = Beehive(
 
 When the `ChartGenerator` acts after the `Researcher` agent, it can ask the `Researcher` agent clarifying questions about its output.
 
+!!! note
+    Questioning (and in general, direction interaction between child invokables) is more representative of human conversation. We plan on extending invokable-to-invokable direct conversation in future versions of Beehive. If you have any ideas, please request a feature or open a PR!
+
 ## Increasing complexity
 
 The examples above represent conversations between different `BeehiveAgents`. However, `Beehives` support conversations between *any* kind of `Invokable`, including other `Beehives`! This is where the real power of Beehive becomes apparent — using nested invokable types allows users to quickly spin up complex conversation structures. Let's look at some examples.

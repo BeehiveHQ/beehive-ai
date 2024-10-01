@@ -4,9 +4,9 @@ from uuid import uuid4
 import pytest
 from sqlalchemy import select
 
-from constants import INTERNAL_FOLDER_PATH
-from invokable.agent import BeehiveAgent
-from memory.db_storage import (
+from beehive.constants import INTERNAL_FOLDER_PATH
+from beehive.invokable.agent import BeehiveAgent
+from beehive.memory.db_storage import (
     BeehiveModel,
     DbStorage,
     InvokableModel,
@@ -14,34 +14,34 @@ from memory.db_storage import (
     TaskModel,
     ToolCallModel,
 )
-from message import BHMessage, MessageRole
-from models.openai_model import OpenAIModel
-from tools.base import BHTool, BHToolCall
+from beehive.message import BHMessage, MessageRole
+from beehive.models.openai_model import OpenAIModel
+from beehive.tools.base import BHTool, BHToolCall
 
 
 @pytest.fixture(scope="module")
-def test_agent():
+def test_db_storage() -> DbStorage:
+    # Create a SQLLite database on the local machine.
+    db_storage = DbStorage(
+        db_uri=f"sqlite:///{Path(INTERNAL_FOLDER_PATH).resolve()}/test_beehive.db"
+    )
+    return db_storage
+
+
+@pytest.fixture(scope="module")
+def test_agent(test_db_storage: DbStorage):
     test_invokable = BeehiveAgent(
         name="TestAgent",
         backstory="You are a helpful AI assistant.",
         model=OpenAIModel(model="gpt-3.5-turbo"),
     )
+    test_invokable._db_storage = test_db_storage
+    test_db_storage.add_invokable(test_invokable)
 
     # History should be empty
     history = test_invokable.grab_history_for_invokable_execution()
     assert history == []
-
     return test_invokable
-
-
-@pytest.fixture(scope="module")
-def test_db_storage(test_agent):
-    # Create a SQLLite database on the local machine.
-    db_storage = DbStorage(
-        db_uri=f"sqlite:///{Path(INTERNAL_FOLDER_PATH).resolve()}/test_beehive.db"
-    )
-    db_storage.add_invokable(test_agent)
-    return db_storage
 
 
 def test_get_model_objects(test_agent, test_db_storage):

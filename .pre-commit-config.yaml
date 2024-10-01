@@ -1,0 +1,46 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.1.0
+    hooks:
+      - id: check-added-large-files
+        exclude: ^server/
+      - id: check-merge-conflict
+        exclude: ^server/
+      - id: detect-private-key
+        exclude: ^server/
+      - id: end-of-file-fixer
+        exclude: ^server/
+      - id: trailing-whitespace
+        exclude: ^server/
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.1.14
+    hooks:
+      - id: ruff
+        args: ["--fix"]
+        exclude: ^server/
+      - id: ruff-format
+        exclude: ^server/
+
+  - repo: https://github.com/PyCQA/isort
+    rev: 5.11.5
+    hooks:
+      - id: isort
+        args: [--profile=black]
+        exclude: ^server/
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.8.0
+    hooks:
+      - id: mypy
+        additional_dependencies:
+          - "pydantic"
+          - "sqlalchemy"
+          - "sqlmodel"
+          - "sqlalchemy2-stubs"
+          - "langchain"
+          - "openai"
+        args:
+          - "--follow-imports"
+          - "normal"
+        exclude: ^utilities/|^server/

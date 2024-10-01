@@ -18,7 +18,6 @@
 | history_lookback<br>`int` | Number of days worth of previous messages to use for answering the current task. |
 | feedback<br>`bool` | Whether to use feedback from the invokable's previous interactions. Feedback enables the LLM to improve their responses over time. Note that only feedback from tasks with a similar embedding are used. |
 | feedback_embedder<br>`BHEmbeddingModel | None` | Embedding model used to calculate embeddings of tasks. These embeddings are stored in a vector database. When a user prompts the Invokable, the Invokable searches against this vector database using the task embedding. It then takes the suggestions generated for similar, previous tasks and concatenates them to the task prompt. Default is `None`. |
-| feedback_prompt_template<br>`str | None` | Prompt for evaluating the output of an LLM. Used to generate suggestions that can be used to improve the model's output in the future. If `None`, then Beehive will use the default prompt template. Default is `None`. |
 | feedback_model<br>`BHChatModel | BaseChatModel` | Language model used to generate feedback for the invokable. If `None`, then default to the `model` attribute. |
 | feedback_embedding_distance<br>`EmbeddingDistance` | Distance method of the embedding space. See the ChromaDB documentation for more information: https://docs.trychroma.com/guides#changing-the-distance-function. |
 | n_feedback_results<br>`int` | Amount of feedback to incorporate into answering the current task. This takes `n` tasks with the most similar embedding to the current one and incorporates their feedback into the Invokable's model. Default is `1`. |
@@ -85,7 +84,7 @@ math_agent.invoke("What's 2+2?")
 
 ## `BeehiveLangchainAgent`
 
-`BeehiveLangchainAgents` are similar to `BeehiveAgents`, except they use Langchain-native types internally. Note that you must `pip install "beehive[langchain]"` in order for this agent to work.
+`BeehiveLangchainAgents` are similar to `BeehiveAgents`, except they use Langchain-native types internally.
 
 Here are the additional fields supported by the `BeehiveLangchainAgent` class.
 

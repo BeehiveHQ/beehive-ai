@@ -8,9 +8,9 @@ from beehive.invokable.types import AnyBHMessageSequence, ExecutorOutput
 from beehive.invokable.utils import _construct_bh_tools_map
 from beehive.message import BHMessage, BHToolMessage, MessageRole
 from beehive.models.base import BHChatModel
-from beehive.output.printer import Printer
 from beehive.prompts import ConciseContextPrompt, FullContextPrompt, ModelErrorPrompt
 from beehive.tools.base import BHTool
+from beehive.utilities.printer import Printer
 
 logger = logging.getLogger(__file__)
 

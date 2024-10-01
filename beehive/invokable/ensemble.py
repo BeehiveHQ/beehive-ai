@@ -28,7 +28,6 @@ from beehive.invokable.types import (
 from beehive.invokable.utils import _convert_messages_to_string
 from beehive.message import BHMessage, MessageRole
 from beehive.models.base import BHChatModel
-from beehive.output.printer import Printer
 from beehive.prompts import (
     ConciseContextPrompt,
     EnsembleFuncSummaryPrompt,
@@ -36,6 +35,7 @@ from beehive.prompts import (
     FullContextPrompt,
     SynthesizerPrompt,
 )
+from beehive.utilities.printer import Printer
 
 logger = logging.getLogger(__file__)
 

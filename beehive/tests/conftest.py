@@ -1,9 +1,9 @@
 import shutil
 from pathlib import Path
 
-from constants import INTERNAL_FOLDER_PATH
-from memory.db_storage import DbStorage
-from memory.feedback_storage import FeedbackStorage
+from beehive.constants import INTERNAL_FOLDER_PATH
+from beehive.memory.db_storage import DbStorage
+from beehive.memory.feedback_storage import FeedbackStorage
 
 
 def pytest_sessionstart():

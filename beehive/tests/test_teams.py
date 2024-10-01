@@ -3,26 +3,26 @@ from unittest import mock
 
 import pytest
 from langchain_openai.chat_models import ChatOpenAI
+from tests.mocks import MockOpenAIClient, MockPrinter
 
-from invokable.agent import BeehiveAgent
-from invokable.base import Feedback
-from invokable.debate import BeehiveDebateTeam
-from invokable.ensemble import BeehiveEnsemble
-from invokable.langchain_agent import BeehiveLangchainAgent
-from invokable.team import _invoke_agent_in_process
-from message import BHMessage, MessageRole
-from models.openai_model import OpenAIModel
-from prompts import (
+from beehive.invokable.agent import BeehiveAgent
+from beehive.invokable.base import Feedback
+from beehive.invokable.debate import BeehiveDebateTeam
+from beehive.invokable.ensemble import BeehiveEnsemble
+from beehive.invokable.langchain_agent import BeehiveLangchainAgent
+from beehive.invokable.team import _invoke_agent_in_process
+from beehive.message import BHMessage, MessageRole
+from beehive.models.openai_model import OpenAIModel
+from beehive.prompts import (
     DebateJudgeSummaryPrompt,
     EnsembleFuncSummaryPrompt,
     EnsembleLLMSummaryPrompt,
 )
-from tests.mocks import MockOpenAIClient, MockPrinter
 
 
 @pytest.fixture(scope="module")
 def test_model():
-    with mock.patch("models.openai_model.OpenAI") as mocked:
+    with mock.patch("beehive.models.openai_model.OpenAI") as mocked:
         mocked.return_value = MockOpenAIClient()
         model = OpenAIModel(model="gpt-3.5-turbo")
         yield model
@@ -30,7 +30,9 @@ def test_model():
 
 @pytest.fixture(scope="module")
 def test_storage():
-    with mock.patch("invokable.executor.InvokableExecutor._db_storage") as mocked:
+    with mock.patch(
+        "beehive.invokable.executor.InvokableExecutor._db_storage"
+    ) as mocked:
         mocked.add_task.return_value = "some_unique_task_id"
         mocked.add_beehive.return_value = "some_unique_beehive_id"
         mocked.get_model_objects.return_value = "Retrieved model objects!"
@@ -40,7 +42,9 @@ def test_storage():
 
 @pytest.fixture(scope="module")
 def test_feedback_storage():
-    with mock.patch("invokable.executor.InvokableExecutor._feedback_storage") as mocked:
+    with mock.patch(
+        "beehive.invokable.executor.InvokableExecutor._feedback_storage"
+    ) as mocked:
         mocked.embed_task_and_record_feedback.return_value = None
         mocked.grab_feedback_from_similar_tasks.return_value = None
         mocked.grab_feedback_for_task.return_value = None
@@ -49,7 +53,7 @@ def test_feedback_storage():
 
 @pytest.fixture(scope="module")
 def test_printer():
-    with mock.patch("invokable.agent.Printer") as mocked_printer:
+    with mock.patch("beehive.invokable.agent.Printer") as mocked_printer:
         mocked_printer._all_beehives = []
         mocked_printer.return_value = MockPrinter()
         yield mocked_printer
@@ -98,7 +102,7 @@ def test_debate_validation():
 
 
 def test_bh_create_async_task():
-    with mock.patch("models.openai_model.OpenAI") as mocked:
+    with mock.patch("beehive.models.openai_model.OpenAI") as mocked:
         mocked.return_value = MockOpenAIClient()
 
         debate_team = BeehiveDebateTeam(
@@ -113,7 +117,7 @@ def test_bh_create_async_task():
         # All chat models return the message "Hello from our mocked class!" This is
         # incompatible with our `Feedback` type
         with mock.patch(
-            "invokable.executor.InvokableExecutor._feedback_model"
+            "beehive.invokable.executor.InvokableExecutor._feedback_model"
         ) as mocked_fb_model:
             mocked_fb_model.chat.return_value = [
                 BHMessage(
@@ -170,7 +174,7 @@ def test_bh_debate_invoke(test_storage, test_feedback_storage, test_printer):
         new_prompt = template.format(other_agent_responses=other_agent_responses)
         return new_prompt
 
-    with mock.patch("models.openai_model.OpenAI") as mocked:
+    with mock.patch("beehive.models.openai_model.OpenAI") as mocked:
         mocked.return_value = MockOpenAIClient()
         debate_team = BeehiveDebateTeam(
             name="BeehiveDebateTeam",
@@ -195,12 +199,12 @@ def test_bh_debate_invoke(test_storage, test_feedback_storage, test_printer):
         )
 
         # Mocked team pool
-        with mock.patch("invokable.team.Pool") as mock_pool_init:
+        with mock.patch("beehive.invokable.team.Pool") as mock_pool_init:
             mock_team_pool_instance = mock_pool_init.return_value.__enter__.return_value
             mock_team_pool_instance.apply_async.return_value = mock_result
 
             # Mocked debate pool
-            with mock.patch("invokable.debate.Pool") as mock_debate_pool_init:
+            with mock.patch("beehive.invokable.debate.Pool") as mock_debate_pool_init:
                 mock_debate_pool_instance = (
                     mock_debate_pool_init.return_value.__enter__.return_value
                 )
@@ -351,7 +355,7 @@ def test_bh_debate_invoke(test_storage, test_feedback_storage, test_printer):
 
 
 def test_ensemble_final_answer_llm(test_storage, test_feedback_storage, test_printer):
-    with mock.patch("models.openai_model.OpenAI") as mocked:
+    with mock.patch("beehive.models.openai_model.OpenAI") as mocked:
         mocked.return_value = MockOpenAIClient()
         ensemble = BeehiveEnsemble(
             name="TestBeehiveEnsemble",
@@ -376,7 +380,7 @@ def test_ensemble_final_answer_llm(test_storage, test_feedback_storage, test_pri
         )
 
         # Mocked team pool
-        with mock.patch("invokable.team.Pool") as mock_pool_init:
+        with mock.patch("beehive.invokable.team.Pool") as mock_pool_init:
             mock_team_pool_instance = mock_pool_init.return_value.__enter__.return_value
             mock_team_pool_instance.apply_async.return_value = mock_result
 
@@ -440,7 +444,7 @@ def test_ensemble_final_answer_llm(test_storage, test_feedback_storage, test_pri
 def test_ensemble_final_answer_default_similarity(
     test_storage, test_feedback_storage, test_printer
 ):
-    with mock.patch("models.openai_model.OpenAI") as mocked:
+    with mock.patch("beehive.models.openai_model.OpenAI") as mocked:
         mocked.return_value = MockOpenAIClient()
         ensemble = BeehiveEnsemble(
             name="TestBeehiveEnsemble",
@@ -464,7 +468,7 @@ def test_ensemble_final_answer_default_similarity(
         )
 
         # Mocked team pool
-        with mock.patch("invokable.team.Pool") as mock_pool_init:
+        with mock.patch("beehive.invokable.team.Pool") as mock_pool_init:
             mock_team_pool_instance = mock_pool_init.return_value.__enter__.return_value
             mock_team_pool_instance.apply_async.return_value = mock_result
 
@@ -531,7 +535,7 @@ def test_ensemble_final_answer_custom_similarity(
     def custom_similarity(x1: str, x2: str) -> float:
         return random.random()
 
-    with mock.patch("models.openai_model.OpenAI") as mocked:
+    with mock.patch("beehive.models.openai_model.OpenAI") as mocked:
         mocked.return_value = MockOpenAIClient()
         ensemble = BeehiveEnsemble(
             name="TestBeehiveEnsemble",
@@ -556,7 +560,7 @@ def test_ensemble_final_answer_custom_similarity(
         )
 
         # Mocked team pool
-        with mock.patch("invokable.team.Pool") as mock_pool_init:
+        with mock.patch("beehive.invokable.team.Pool") as mock_pool_init:
             mock_team_pool_instance = mock_pool_init.return_value.__enter__.return_value
             mock_team_pool_instance.apply_async.return_value = mock_result
 

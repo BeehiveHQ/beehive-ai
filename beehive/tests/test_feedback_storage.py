@@ -3,13 +3,13 @@ from pathlib import Path
 import pytest
 from sqlalchemy import select
 
-from constants import INTERNAL_FOLDER_PATH
-from invokable.agent import BeehiveAgent
-from invokable.base import Feedback
-from memory.db_storage import DbStorage, TaskModel
-from memory.feedback_storage import FeedbackStorage
-from models.openai_model import OpenAIModel
-from tests.mocks import MockEmbeddingModel
+from beehive.constants import INTERNAL_FOLDER_PATH
+from beehive.invokable.agent import BeehiveAgent
+from beehive.invokable.base import Feedback
+from beehive.memory.db_storage import DbStorage, TaskModel
+from beehive.memory.feedback_storage import FeedbackStorage
+from beehive.models.openai_model import OpenAIModel
+from beehive.tests.mocks import MockEmbeddingModel
 
 
 @pytest.fixture(scope="module")
