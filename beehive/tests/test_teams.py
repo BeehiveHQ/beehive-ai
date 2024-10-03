@@ -3,7 +3,6 @@ from unittest import mock
 
 import pytest
 from langchain_openai.chat_models import ChatOpenAI
-from tests.mocks import MockOpenAIClient, MockPrinter
 
 from beehive.invokable.agent import BeehiveAgent
 from beehive.invokable.base import Feedback
@@ -18,6 +17,7 @@ from beehive.prompts import (
     EnsembleFuncSummaryPrompt,
     EnsembleLLMSummaryPrompt,
 )
+from beehive.tests.mocks import MockOpenAIClient, MockPrinter
 
 
 @pytest.fixture(scope="module")
