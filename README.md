@@ -1,5 +1,10 @@
 # 🐝 Welcome to Beehive!
 
+[![CI Linux](https://github.com/BeehiveHQ/beehive-ai/actions/workflows/ci-linux.yml/badge.svg)](https://github.com/BeehiveHQ/beehive-ai/actions/workflows/ci-linux.yml/badge.svg)
+[![CI MacOS](https://github.com/BeehiveHQ/beehive-ai/actions/workflows/ci-macos.yml/badge.svg)](https://github.com/BeehiveHQ/beehive-ai/actions/workflows/ci-macos.yml)
+[![mypy](http://www.mypy-lang.org/static/mypy_badge.svg)](http://mypy-lang.org/)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+
 Beehive is an open-source framework for building AI agents and enabling these agents to cooperate with one another to solve tasks. This project was heavily inspired by the awesome work at Langgraph, CrewAI, and PyAutogen.
 
 We're still in the early stages, so any and all feedback is welcome! If you notice a bug or want to suggest an improvement, please open a Github PR.
