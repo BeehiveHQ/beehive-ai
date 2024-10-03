@@ -18,10 +18,10 @@ from beehive.invokable.executor import InvokableExecutor
 from beehive.invokable.types import ExecutorOutput
 from beehive.message import BHMessage
 from beehive.mixins.langchain import LangchainMixin
-from beehive.utilities.printer import Printer
 from beehive.prompts import ConciseContextPrompt, FullContextPrompt, ModelErrorPrompt
 from beehive.tools.base import create_parser
 from beehive.tools.types import FunctionSpec
+from beehive.utilities.printer import Printer
 
 logger = logging.getLogger(__file__)
 
@@ -255,7 +255,7 @@ class BeehiveLangchainAgent(Agent, LangchainMixin):
           - `printer` (`output.printer.Printer`)
 
         examples:
-        - See the documentation here: [TODO]
+        - See the documentation here: https://beehivehq.github.io/beehive-ai/
         """
         # Define the printer and create Panel for the invokable
         printer = stdout_printer if stdout_printer else Printer()
