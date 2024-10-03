@@ -1,0 +1,32 @@
+name: CI Linux
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'beehive/**'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'beehive/**'
+
+env:
+  OPENAI_API_KEY: test
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: "3.12"
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install ".[dev]"
+    - name: Tests
+      run: pytest beehive/tests -v

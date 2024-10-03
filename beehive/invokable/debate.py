@@ -23,7 +23,6 @@ from beehive.invokable.types import (
 )
 from beehive.message import BHMessage, MessageRole
 from beehive.models.base import BHChatModel
-from beehive.output.printer import Printer
 from beehive.prompts import (
     BHPrompt,
     ConciseContextPrompt,
@@ -33,7 +32,8 @@ from beehive.prompts import (
     LongFormDebatePrompt,
     ShortFormDebatePrompt,
 )
-from tools.base import BHTool
+from beehive.tools.base import BHTool
+from beehive.utilities.printer import Printer
 
 logger = logging.getLogger(__file__)
 

@@ -1,6 +1,6 @@
 from typing import Mapping
 
-from tests.parser_common import TestModel
+from beehive.tests.parser_common import TestModel
 
 
 def google_fetch_smalltable_rows(

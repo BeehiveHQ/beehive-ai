@@ -22,7 +22,6 @@ from beehive.invokable.types import (
 from beehive.message import BHMessage, BHToolMessage, MessageRole
 from beehive.mixins.langchain import LangchainMixin
 from beehive.models.base import BHChatModel
-from beehive.output.printer import Printer
 from beehive.prompts import (
     AskQuestionPrompt,
     ModelErrorPrompt,
@@ -30,6 +29,7 @@ from beehive.prompts import (
     RouterQuestionPrompt,
     RouterRoutingPrompt,
 )
+from beehive.utilities.printer import Printer
 
 logger = logging.getLogger(__file__)
 

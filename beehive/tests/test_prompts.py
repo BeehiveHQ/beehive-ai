@@ -1,4 +1,4 @@
-from prompts import CONTEXT_PROMPT_FULL, prompt_generator
+from beehive.prompts import CONTEXT_PROMPT_FULL, prompt_generator
 
 
 def test_prompt():

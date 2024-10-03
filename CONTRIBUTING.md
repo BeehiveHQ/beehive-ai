@@ -1,15 +1,30 @@
 # Contributing
 
-Thank you for considering contributing to Beehive! We greatly appreciate your effort in making Beehive a better product.
+Thank you for your interest in contributing to this project! Here’s a quick guide to get started:
 
-## How do I get started?
+## How to Contribute
+- Contributions are made through Pull Requests (PRs).
+- Please ensure your PR is associated with an existing issue, bug, or feature request. If none exist, feel free to create one first for discussion.
 
-Beehive is currently in alpha, so we are not accepting contributions at this time. Once we release our stable API, we will update the guidelines and begin accepting contributions! 
+## Development Setup
+You can set up the development environment using the provided Makefile. Simply run:
 
-## Raising an issue
+```bash
+make setup
+```
 
-If you notice a bug, please raise an issue using the bug report template.
+Note that this **only works on OSX**. Additional Makefile commands are incoming for folks using Windows and Linux machines.
 
-## Suggesting a new feature
+This will install all necessary dependencies and prepare your environment for development.
 
-If you would like to suggest a new feature, please raise an issue using the feature request template.
+## Submitting a PR
+- Fork the repository and create your feature branch.
+- Make your changes, ensuring you follow the project's coding standards. We use pre-commit hooks to ensure that consistency across contributors.
+- Write tests to confirm the expected functionality of your changes. We rely heavily on mocking/patching via `unittest.mock`.
+- Prior to submitting your PR, make sure that tests are passing:
+  ```bash
+  make tests
+  ```
+- Submit a PR with a clear description linking it to the related issue.
+
+We appreciate your contribution!

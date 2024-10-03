@@ -1,10 +1,10 @@
 import pytest
 
-from tests.parser_google_fns import google_fetch_smalltable_rows
-from tests.parser_sphinx_fns import sphinx_fetch_smalltable_rows
-from tools.base import create_parser
-from tools.google import GoogleParser
-from tools.sphinx import SphinxParser
+from beehive.tests.parser_google_fns import google_fetch_smalltable_rows
+from beehive.tests.parser_sphinx_fns import sphinx_fetch_smalltable_rows
+from beehive.tools.base import create_parser
+from beehive.tools.google import GoogleParser
+from beehive.tools.sphinx import SphinxParser
 
 
 def test_docstring_detection():

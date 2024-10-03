@@ -4,11 +4,11 @@ import pytest
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from langchain_openai.chat_models import ChatOpenAI
 
-from invokable.base import Feedback
-from invokable.langchain_agent import BeehiveLangchainAgent
-from message import BHMessage, MessageRole
-from models.openai_model import OpenAIModel
-from tests.mocks import MockOpenAIClient, MockPrinter
+from beehive.invokable.base import Feedback
+from beehive.invokable.langchain_agent import BeehiveLangchainAgent
+from beehive.message import BHMessage, MessageRole
+from beehive.models.openai_model import OpenAIModel
+from beehive.tests.mocks import MockOpenAIClient, MockPrinter
 
 
 @pytest.fixture(scope="module")
@@ -21,7 +21,9 @@ def test_model():
 
 @pytest.fixture(scope="module")
 def test_storage():
-    with mock.patch("invokable.executor.InvokableExecutor._db_storage") as mocked:
+    with mock.patch(
+        "beehive.invokable.executor.InvokableExecutor._db_storage"
+    ) as mocked:
         mocked.add_task.return_value = "some_unique_task_id"
         mocked.add_beehive.return_value = "some_unique_beehive_id"
         mocked.get_model_objects.return_value = "Retrieved model objects!"
@@ -31,7 +33,9 @@ def test_storage():
 
 @pytest.fixture(scope="module")
 def test_feedback_storage():
-    with mock.patch("invokable.executor.InvokableExecutor._feedback_storage") as mocked:
+    with mock.patch(
+        "beehive.invokable.executor.InvokableExecutor._feedback_storage"
+    ) as mocked:
         mocked.embed_task_and_record_feedback.return_value = None
         mocked.grab_feedback_from_similar_tasks.return_value = None
         mocked.grab_feedback_for_task.return_value = None
@@ -40,7 +44,7 @@ def test_feedback_storage():
 
 @pytest.fixture(scope="module")
 def test_printer():
-    with mock.patch("invokable.agent.Printer") as mocked_printer:
+    with mock.patch("beehive.invokable.agent.Printer") as mocked_printer:
         mocked_printer._all_beehives = []
         mocked_printer.return_value = MockPrinter()
         yield mocked_printer
@@ -138,7 +142,7 @@ def test_lc_agent_invoke_with_memory_feedback(
     test_printer: mock.MagicMock,
 ):
     with mock.patch(
-        "invokable.executor.InvokableExecutor._feedback_model"
+        "beehive.invokable.executor.InvokableExecutor._feedback_model"
     ) as mocked_fb_model:
         mocked_fb_model.chat.return_value = [
             BHMessage(

@@ -3,7 +3,7 @@ from enum import StrEnum
 
 from pydantic import BaseModel, Field
 
-from tools.base import BHToolCall
+from beehive.tools.base import BHToolCall
 
 
 class MessageRole(StrEnum):

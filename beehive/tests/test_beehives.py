@@ -6,20 +6,22 @@ from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from langchain_openai.chat_models import ChatOpenAI
 from pydantic_core import ValidationError
 
-from invokable.agent import BeehiveAgent
-from invokable.base import Route
-from invokable.beehive import Beehive, DynamicExecution, FixedExecution
-from invokable.langchain_agent import BeehiveLangchainAgent
-from invokable.types import BHStateElt
-from message import BHMessage, MessageRole
-from models.openai_model import OpenAIModel
-from prompts import CONTEXT_PROMPT_CONCISE, CONTEXT_PROMPT_FULL, prompt_generator
-from tests.mocks import MockChatCompletion, MockOpenAIClient, MockPrinter
+from beehive.invokable.agent import BeehiveAgent
+from beehive.invokable.base import Route
+from beehive.invokable.beehive import Beehive, DynamicExecution, FixedExecution
+from beehive.invokable.langchain_agent import BeehiveLangchainAgent
+from beehive.invokable.types import BHStateElt
+from beehive.message import BHMessage, MessageRole
+from beehive.models.openai_model import OpenAIModel
+from beehive.prompts import ConciseContextPrompt, FullContextPrompt
+from beehive.tests.mocks import MockChatCompletion, MockOpenAIClient, MockPrinter
 
 
 @pytest.fixture(scope="module")
 def test_storage():
-    with mock.patch("invokable.executor.InvokableExecutor._db_storage") as mocked:
+    with mock.patch(
+        "beehive.invokable.executor.InvokableExecutor._db_storage"
+    ) as mocked:
         mocked.add_task.return_value = "some_unique_task_id"
         mocked.add_beehive.return_value = "some_unique_beehive_id"
         mocked.get_model_objects.return_value = "Retrieved model objects!"
@@ -29,7 +31,9 @@ def test_storage():
 
 @pytest.fixture(scope="module")
 def test_feedback_storage():
-    with mock.patch("invokable.executor.InvokableExecutor._feedback_storage") as mocked:
+    with mock.patch(
+        "beehive.invokable.executor.InvokableExecutor._feedback_storage"
+    ) as mocked:
         mocked.embed_task_and_record_feedback.return_value = None
         mocked.grab_feedback_from_similar_tasks.return_value = None
         mocked.grab_feedback_for_task.return_value = None
@@ -38,14 +42,14 @@ def test_feedback_storage():
 
 @pytest.fixture(scope="module")
 def test_printer():
-    with mock.patch("invokable.agent.Printer") as mocked_printer:
+    with mock.patch("beehive.invokable.agent.Printer") as mocked_printer:
         mocked_printer._all_beehives = []
         mocked_printer.return_value = MockPrinter()
         yield mocked_printer
 
 
 def test_dynamic_fixed_execution():
-    with mock.patch("models.openai_model.OpenAI") as mocked:
+    with mock.patch("beehive.models.openai_model.OpenAI") as mocked:
         mocked.return_value = MockOpenAIClient()
         agent1 = BeehiveAgent(
             name="TestAgent1",
@@ -72,7 +76,7 @@ def test_dynamic_fixed_execution():
 
 
 def test_bh_setup():
-    with mock.patch("models.openai_model.OpenAI") as mocked:
+    with mock.patch("beehive.models.openai_model.OpenAI") as mocked:
         mocked.return_value = MockOpenAIClient()
         agent1 = BeehiveAgent(
             name="TestAgent1",
@@ -160,7 +164,9 @@ def test_bh_setup():
 
 
 def test_beehive_function_calls():
-    with mock.patch("invokable.beehive.Beehive._invoke_without_route") as mocked:
+    with mock.patch(
+        "beehive.invokable.beehive.Beehive._invoke_without_route"
+    ) as mocked:
         mocked.return_value = ["Invoked Beehive without a route!"]
         agent1 = BeehiveAgent(
             name="TestAgent1",
@@ -185,7 +191,7 @@ def test_beehive_function_calls():
         assert noroute_output == ["Invoked Beehive without a route!"]  # type: ignore
 
     # Invoke with a route
-    with mock.patch("invokable.beehive.Beehive._invoke_with_route") as mocked:
+    with mock.patch("beehive.invokable.beehive.Beehive._invoke_with_route") as mocked:
         mocked.return_value = ["Invoked Beehive with a route!"]
         agent1 = BeehiveAgent(
             name="TestAgent1",
@@ -208,7 +214,7 @@ def test_beehive_function_calls():
 
 
 def test_beehive_no_route(test_storage, test_feedback_storage, test_printer):
-    with mock.patch("models.openai_model.OpenAI") as mocked_model:
+    with mock.patch("beehive.models.openai_model.OpenAI") as mocked_model:
         mocked_model.return_value = MockOpenAIClient()
         agent1 = BeehiveAgent(
             name="TestAgent1",
@@ -221,7 +227,7 @@ def test_beehive_no_route(test_storage, test_feedback_storage, test_printer):
             model=OpenAIModel(model="gpt-3.5-turbo"),
         )
 
-        with mock.patch("invokable.beehive.Beehive._router") as mocked_router:
+        with mock.patch("beehive.invokable.beehive.Beehive._router") as mocked_router:
             mocked_router.name = "Router"
 
             # Router return messages. This is for all of our tests
@@ -373,9 +379,11 @@ def test_beehive_no_route(test_storage, test_feedback_storage, test_printer):
 
             assert isinstance(agent2.state[1], BHMessage)
             assert agent2.state[1].role == MessageRole.CONTEXT
-            assert agent2.state[1].content == prompt_generator(
-                CONTEXT_PROMPT_FULL,
-                context='- {"agent_backstory": "You are a helpful AI assistant.", "agent_messages": ["Hello from our mocked class!"], "agent_name": "TestAgent1"}',
+            assert (
+                agent2.state[1].content
+                == FullContextPrompt(
+                    context='- {"agent_backstory": "You are a helpful AI assistant.", "agent_messages": ["Hello from our mocked class!"], "agent_name": "TestAgent1"}',
+                ).render()
             )
 
             assert isinstance(agent2.state[2], BHMessage)
@@ -388,7 +396,7 @@ def test_beehive_no_route(test_storage, test_feedback_storage, test_printer):
 
 
 def test_beehive_no_route_with_cycle(test_storage, test_feedback_storage, test_printer):
-    with mock.patch("models.openai_model.OpenAI") as mocked_model:
+    with mock.patch("beehive.models.openai_model.OpenAI") as mocked_model:
         mocked_model.return_value = MockOpenAIClient()
         agent1 = BeehiveAgent(
             name="TestAgent1",
@@ -400,7 +408,7 @@ def test_beehive_no_route_with_cycle(test_storage, test_feedback_storage, test_p
             backstory="You are a helpful AI assistant.",
             model=OpenAIModel(model="gpt-3.5-turbo"),
         )
-        with mock.patch("invokable.beehive.Beehive._router") as mocked_router:
+        with mock.patch("beehive.invokable.beehive.Beehive._router") as mocked_router:
             next_agents = [
                 [
                     BHMessage(
@@ -524,9 +532,11 @@ def test_beehive_no_route_with_cycle(test_storage, test_feedback_storage, test_p
             fourth_message = agent1.state[3]
             assert isinstance(fourth_message, BHMessage)
             assert fourth_message.role == MessageRole.CONTEXT
-            assert fourth_message.content == prompt_generator(
-                CONTEXT_PROMPT_FULL,
-                context='- {"agent_backstory": "You are a helpful AI assistant.", "agent_messages": ["Hello from our mocked class!"], "agent_name": "TestAgent2"}',
+            assert (
+                fourth_message.content
+                == FullContextPrompt(
+                    context='- {"agent_backstory": "You are a helpful AI assistant.", "agent_messages": ["Hello from our mocked class!"], "agent_name": "TestAgent2"}',
+                ).render()
             )
 
             fifth_message = agent1.state[4]
@@ -559,9 +569,11 @@ def test_beehive_no_route_with_cycle(test_storage, test_feedback_storage, test_p
             second_message2 = agent2.state[1]
             assert isinstance(second_message2, BHMessage)
             assert second_message2.role == MessageRole.CONTEXT
-            assert second_message2.content == prompt_generator(
-                CONTEXT_PROMPT_FULL,
-                context='- {"agent_backstory": "You are a helpful AI assistant.", "agent_messages": ["Hello from our mocked class!"], "agent_name": "TestAgent1"}',
+            assert (
+                second_message2.content
+                == FullContextPrompt(
+                    context='- {"agent_backstory": "You are a helpful AI assistant.", "agent_messages": ["Hello from our mocked class!"], "agent_name": "TestAgent1"}',
+                ).render()
             )
 
             third_message2 = agent2.state[2]
@@ -586,7 +598,7 @@ def test_beehive_no_route_with_cycle(test_storage, test_feedback_storage, test_p
 
 
 def test_beehive_route(test_storage, test_feedback_storage, test_printer):
-    with mock.patch("models.openai_model.OpenAI") as mocked_model:
+    with mock.patch("beehive.models.openai_model.OpenAI") as mocked_model:
         mocked_model.return_value = MockOpenAIClient()
         agent1 = BeehiveAgent(
             name="TestAgent1",
@@ -599,7 +611,7 @@ def test_beehive_route(test_storage, test_feedback_storage, test_printer):
             model=OpenAIModel(model="gpt-3.5-turbo"),
         )
 
-        with mock.patch("invokable.beehive.Beehive._router") as mocked_router:
+        with mock.patch("beehive.invokable.beehive.Beehive._router") as mocked_router:
             next_tasks = [
                 [
                     BHMessage(
@@ -724,9 +736,11 @@ def test_beehive_route(test_storage, test_feedback_storage, test_printer):
             fourth_message = agent1.state[3]
             assert isinstance(fourth_message, BHMessage)
             assert fourth_message.role == MessageRole.CONTEXT
-            assert fourth_message.content == prompt_generator(
-                CONTEXT_PROMPT_FULL,
-                context='- {"agent_backstory": "You are a helpful AI assistant.", "agent_messages": ["Hello from our mocked class!"], "agent_name": "TestAgent2"}',
+            assert (
+                fourth_message.content
+                == FullContextPrompt(
+                    context='- {"agent_backstory": "You are a helpful AI assistant.", "agent_messages": ["Hello from our mocked class!"], "agent_name": "TestAgent2"}',
+                ).render()
             )
 
             fifth_message = agent1.state[4]
@@ -759,9 +773,11 @@ def test_beehive_route(test_storage, test_feedback_storage, test_printer):
             second_message2 = agent2.state[1]
             assert isinstance(second_message2, BHMessage)
             assert second_message2.role == MessageRole.CONTEXT
-            assert second_message2.content == prompt_generator(
-                CONTEXT_PROMPT_FULL,
-                context='- {"agent_backstory": "You are a helpful AI assistant.", "agent_messages": ["Hello from our mocked class!"], "agent_name": "TestAgent1"}',
+            assert (
+                second_message2.content
+                == FullContextPrompt(
+                    context='- {"agent_backstory": "You are a helpful AI assistant.", "agent_messages": ["Hello from our mocked class!"], "agent_name": "TestAgent1"}',
+                ).render()
             )
 
             third_message2 = agent2.state[2]
@@ -788,7 +804,7 @@ def test_beehive_route(test_storage, test_feedback_storage, test_printer):
 def test_beehive_no_route_with_nested_beehive(
     test_storage, test_feedback_storage, test_printer
 ):
-    with mock.patch("models.openai_model.OpenAI") as mocked_model:
+    with mock.patch("beehive.models.openai_model.OpenAI") as mocked_model:
         mocked_model.return_value = MockOpenAIClient()
         agent0 = BeehiveAgent(
             name="TestAgent0",
@@ -805,7 +821,9 @@ def test_beehive_no_route_with_nested_beehive(
             backstory="You are a helpful AI assistant.",
             model=OpenAIModel(model="gpt-3.5-turbo"),
         )
-        with mock.patch("invokable.beehive.Beehive._create_router") as mocked_router:
+        with mock.patch(
+            "beehive.invokable.beehive.Beehive._create_router"
+        ) as mocked_router:
             mocked_router_instances = [
                 mock.Mock(name="RouterInner"),
                 mock.Mock(name="RouterOuter"),
@@ -968,9 +986,11 @@ def test_beehive_no_route_with_nested_beehive(
             second_message1 = agent1.state[1]
             assert isinstance(second_message1, BHMessage)
             assert second_message1.role == MessageRole.CONTEXT
-            assert second_message1.content == prompt_generator(
-                CONTEXT_PROMPT_FULL,
-                context='- {"agent_backstory": "You are a helpful AI assistant.", "agent_messages": ["Hello from our mocked class!"], "agent_name": "TestAgent0"}',
+            assert (
+                second_message1.content
+                == FullContextPrompt(
+                    context='- {"agent_backstory": "You are a helpful AI assistant.", "agent_messages": ["Hello from our mocked class!"], "agent_name": "TestAgent0"}',
+                ).render()
             )
 
             third_message1 = agent1.state[2]
@@ -991,9 +1011,11 @@ def test_beehive_no_route_with_nested_beehive(
             fifth_message1 = agent1.state[4]
             assert isinstance(fifth_message1, BHMessage)
             assert fifth_message1.role == MessageRole.CONTEXT
-            assert fifth_message1.content == prompt_generator(
-                CONTEXT_PROMPT_CONCISE,
-                context='- {"agent_backstory": "You are a helpful AI assistant.", "agent_messages": ["Hello from our mocked class!"], "agent_name": "TestAgent2"}',
+            assert (
+                fifth_message1.content
+                == ConciseContextPrompt(
+                    context='- {"agent_backstory": "You are a helpful AI assistant.", "agent_messages": ["Hello from our mocked class!"], "agent_name": "TestAgent2"}',
+                ).render()
             )
 
             sixth_message1 = agent1.state[5]
@@ -1020,14 +1042,16 @@ def test_beehive_no_route_with_nested_beehive(
             second_message2 = agent2.state[1]
             assert isinstance(second_message2, BHMessage)
             assert second_message2.role == MessageRole.CONTEXT
-            assert second_message2.content == prompt_generator(
-                CONTEXT_PROMPT_FULL,
-                context="\n".join(
-                    [
-                        '- {"agent_backstory": "You are a helpful AI assistant.", "agent_messages": ["Hello from our mocked class!"], "agent_name": "TestAgent0"}',
-                        '- {"agent_backstory": "You are a helpful AI assistant.", "agent_messages": ["Hello from our mocked class!"], "agent_name": "TestAgent1"}',
-                    ]
-                ),
+            assert (
+                second_message2.content
+                == FullContextPrompt(
+                    context="\n".join(
+                        [
+                            '- {"agent_backstory": "You are a helpful AI assistant.", "agent_messages": ["Hello from our mocked class!"], "agent_name": "TestAgent0"}',
+                            '- {"agent_backstory": "You are a helpful AI assistant.", "agent_messages": ["Hello from our mocked class!"], "agent_name": "TestAgent1"}',
+                        ]
+                    ),
+                ).render()
             )
 
             third_message2 = agent2.state[2]
@@ -1042,7 +1066,7 @@ def test_beehive_no_route_with_nested_beehive(
 
 
 def test_beehive_with_mix_of_agents(test_storage, test_feedback_storage, test_printer):
-    with mock.patch("models.openai_model.OpenAI") as mocked_bh_model:
+    with mock.patch("beehive.models.openai_model.OpenAI") as mocked_bh_model:
         mocked_bh_model.return_value = MockOpenAIClient()
 
         with mock.patch(
@@ -1061,7 +1085,9 @@ def test_beehive_with_mix_of_agents(test_storage, test_feedback_storage, test_pr
                 model=OpenAIModel(model="gpt-3.5-turbo"),
             )
 
-            with mock.patch("invokable.beehive.Beehive._router") as mocked_router:
+            with mock.patch(
+                "beehive.invokable.beehive.Beehive._router"
+            ) as mocked_router:
                 mocked_router.name = "Router"
 
                 # The router should start at Agent1, since that is the entrypoint. From
@@ -1163,9 +1189,11 @@ def test_beehive_with_mix_of_agents(test_storage, test_feedback_storage, test_pr
 
                 fourth_message1 = agent1.state[3]
                 assert isinstance(fourth_message1, AIMessage)
-                assert fourth_message1.content == prompt_generator(
-                    CONTEXT_PROMPT_FULL,
-                    context='- {"agent_backstory": "You are a helpful AI assistant.", "agent_messages": ["Hello from our mocked class!"], "agent_name": "TestAgent2"}',
+                assert (
+                    fourth_message1.content
+                    == FullContextPrompt(
+                        context='- {"agent_backstory": "You are a helpful AI assistant.", "agent_messages": ["Hello from our mocked class!"], "agent_name": "TestAgent2"}',
+                    ).render()
                 )
 
                 fifth_message1 = agent1.state[4]
@@ -1183,7 +1211,7 @@ def test_beehive_with_mix_of_agents(test_storage, test_feedback_storage, test_pr
 def test_beehive_with_questions_between_agents(
     test_storage, test_feedback_storage, test_printer
 ):
-    with mock.patch("models.openai_model.OpenAIModel._client") as mocked_model:
+    with mock.patch("beehive.models.openai_model.OpenAIModel._client") as mocked_model:
         chat_messages = [
             MockChatCompletion(["Hello from our mocked class!"]),
             MockChatCompletion(
@@ -1208,7 +1236,7 @@ def test_beehive_with_questions_between_agents(
             backstory="You are a helpful AI assistant.",
             model=OpenAIModel(model="gpt-3.5-turbo"),
         )
-        with mock.patch("invokable.beehive.Beehive._router") as mocked_router:
+        with mock.patch("beehive.invokable.beehive.Beehive._router") as mocked_router:
             next_agents = [
                 [
                     BHMessage(
@@ -1394,7 +1422,7 @@ def test_beehive_with_questions_between_agents_and_beehives(
         "Hello from our mocked class (clarified)!",
         "After receiving clarification, hello from our mocked class!",
     ]
-    with mock.patch("models.openai_model.OpenAIModel._client") as mocked_model:
+    with mock.patch("beehive.models.openai_model.OpenAIModel._client") as mocked_model:
         chat_messages = [MockChatCompletion([x]) for x in expected_msg_contents]
         mocked_model.chat.completions.create = mock.Mock(side_effect=chat_messages)
 
@@ -1413,7 +1441,9 @@ def test_beehive_with_questions_between_agents_and_beehives(
             backstory="You are a helpful AI assistant.",
             model=OpenAIModel(model="gpt-3.5-turbo"),
         )
-        with mock.patch("invokable.beehive.Beehive._create_router") as mocked_router:
+        with mock.patch(
+            "beehive.invokable.beehive.Beehive._create_router"
+        ) as mocked_router:
             mocked_router_instances = [
                 mock.Mock(name="RouterInner"),
                 mock.Mock(name="RouterOuter"),
@@ -1644,7 +1674,7 @@ def test_beehive_with_questions_between_agents_and_beehives(
 
 
 def test_beehive_chat_loop(test_storage, test_feedback_storage, test_printer):
-    with mock.patch("models.openai_model.OpenAI") as mocked_bh_model:
+    with mock.patch("beehive.models.openai_model.OpenAI") as mocked_bh_model:
         mocked_bh_model.return_value = MockOpenAIClient()
 
         with mock.patch(
@@ -1663,7 +1693,9 @@ def test_beehive_chat_loop(test_storage, test_feedback_storage, test_printer):
                 model=OpenAIModel(model="gpt-3.5-turbo"),
             )
 
-            with mock.patch("invokable.beehive.Beehive._router") as mocked_router:
+            with mock.patch(
+                "beehive.invokable.beehive.Beehive._router"
+            ) as mocked_router:
                 mocked_router.name = "Router"
 
                 # The router should start at Agent1, since that is the entrypoint. From

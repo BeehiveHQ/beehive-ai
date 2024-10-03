@@ -1,19 +1,19 @@
 import pytest
 from pydantic import BaseModel, Field, ValidationError
 
-from tests.parser_common import TestModel
-from tests.parser_google_fns import (
+from beehive.tests.parser_common import TestModel
+from beehive.tests.parser_google_fns import (
     bad_google_fetch_smalltable_rows_bad_format,
     bad_google_fetch_smalltable_rows_extra_arg,
     google_fetch_smalltable_rows,
 )
-from tests.parser_sphinx_fns import (
+from beehive.tests.parser_sphinx_fns import (
     bad_sphinx_fetch_smalltable_rows_bad_format,
     bad_sphinx_fetch_smalltable_rows_extra_arg,
     sphinx_fetch_smalltable_rows,
 )
-from tools.google import GoogleParser
-from tools.sphinx import SphinxParser
+from beehive.tools.google import GoogleParser
+from beehive.tools.sphinx import SphinxParser
 
 
 def test_sphinx_parser():

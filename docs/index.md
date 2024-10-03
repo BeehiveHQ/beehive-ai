@@ -24,6 +24,7 @@ Beehive, in particular, is great for rapidly creating complex chat patterns betw
 
 In addition, Beehive shares many features with other popular agentic frameworks:
 
+- Role-based agent design
 - Loops and conditionals between agents
 - State management
 - Streaming support
@@ -32,22 +33,3 @@ In addition, Beehive shares many features with other popular agentic frameworks:
 Here is an example of something you could create in Beehive with relatively little code:
 
 ![Example Beehive](images/example_beehive.png){ align=left }
-
-
-??? example "Code"
-    pass
-
-
-
-## Installation
-
-You can install Beehive with `pip`:
-```bash
-pip install beehive
-```
-
-Note that the Python OpenAI client is included in the standard Beehive installation.
-
-Beehive also supports the following add-ons:
-
-- `pip install "beehive[langchain]"`
