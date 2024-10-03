@@ -12,6 +12,9 @@ on:
     paths:
       - 'beehive/**'
 
+env:
+  OPENAI_API_KEY: test
+
 jobs:
   test:
     runs-on: ubuntu-latest
