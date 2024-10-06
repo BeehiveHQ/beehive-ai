@@ -1722,7 +1722,7 @@ def test_beehive_asking_agent_question(
                 [
                     BHMessage(
                         role=MessageRole.ASSISTANT,
-                        content='{"task": "This is agent 2\'s first task in the inner beehive."}',
+                        content='{"agent": "TestAgent2", "reason": "Agent2 can complete this task.", "task": "This is agent 2\'s first task in the inner beehive."}',
                     ),
                 ],
             ]
@@ -1757,7 +1757,9 @@ def test_beehive_asking_agent_question(
                 name="InnerBeehive",
                 backstory="You are the inner Beehive.",
                 model=OpenAIModel(model="gpt-3.5-turbo"),
-                execution_process=FixedExecution(route=(agent1 >> agent2)),
+                execution_process=DynamicExecution(
+                    entrypoint=agent1, edges=[(agent1 >> agent2)]
+                ),
                 enable_questioning=True,
             )
             inner_bh._db_storage = test_storage
