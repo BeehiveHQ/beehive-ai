@@ -1393,7 +1393,7 @@ def test_beehive_with_questions_between_agents(
             assert isinstance(agent2.state[4], BHMessage)
             assert agent2.state[4].role == MessageRole.CONTEXT
             assert (
-                "The format for this context is the same as before."
+                "The format for each item in the list is the same as before."
                 in agent2.state[4].content
             )
             assert (
