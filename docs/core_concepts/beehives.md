@@ -60,11 +60,13 @@ The `FixedExecution` class accepts a single route — this is the route that the
 ```python
 from beehive.invokable.agent import BeehiveAgent
 from beehive.invokable.beehive import Beehive, FixedExecution
-from beehive.models.openai import OpenAIModel
+from beehive.models.openai_model import OpenAIModel
+
+backstory_template = "{backstory} You are collaborating with other assistants powered by language models. Answer questions to the best of your ability. It is acceptable if you cannot fully complete the task, as other agents will build on your work. Your goal is to provide valuable input that moves the task forward."
 
 math_agent = BeehiveAgent(
     name="MathAgent",
-    backstory="You are a helpful AI assistant that specializes in performing complex calculations.",
+    backstory=backstory_template.format(backstory="You are a helpful AI assistant that specializes in performing complex calculations."),
     model=OpenAIModel(
         model="gpt-3.5-turbo",
         api_key="<your_api_key>"
@@ -73,7 +75,7 @@ math_agent = BeehiveAgent(
 
 math_qc_agent = BeehiveAgent(
     name="MathQCAgent",
-    backstory="You are math critic who specializes in identifying errors in calculations.",
+    backstory=backstory_template.format(backstory="You are math critic who specializes in identifying errors in calculations."),
     model=OpenAIModel(
         model="gpt-3.5-turbo-0125",
         api_key="<your_api_key>",
@@ -102,7 +104,73 @@ As you can see, in our `FixedExecution` configuration, we specified a route that
 
 When the Beehive executes, here is what is printed to `stdout`:
 ```
-[[ TODO ]]
+------------------------------------------------------------------------------------------------------------------------
+CalculationBeehive / MathAgent
+
+Calculate the total number of gems in a treasure chest given the following: there are 175 diamonds, 35 fewer rubies than
+diamonds, and twice the number of emeralds as rubies. Provide the calculation steps and the final total.
+
+To find the total number of gems in the treasure chest, we need to calculate the number of each type of gem and then sum
+them up.
+
+1. **Number of Diamonds**: Given as 175.
+
+2. **Number of Rubies**: There are 35 fewer rubies than diamonds.
+   \[
+   \text{Number of Rubies} = 175 - 35 = 140
+   \]
+
+3. **Number of Emeralds**: There are twice the number of emeralds as rubies.
+   \[
+   \text{Number of Emeralds} = 2 \times 140 = 280
+   \]
+
+Now, add all these together to find the total number of gems:
+\[
+\text{Total Number of Gems} = \text{Number of Diamonds} + \text{Number of Rubies} + \text{Number of Emeralds} = 175 +
+140 + 280
+\]
+\[
+\text{Total Number of Gems} = 595
+\]
+
+Thus, the treasure chest contains a total of 595 gems.
+------------------------------------------------------------------------------------------------------------------------
+CalculationBeehive / Router
+
+Sending conversation to MathQCAgent next!
+------------------------------------------------------------------------------------------------------------------------
+CalculationBeehive / MathQCAgent
+
+Please review the calculation provided by the previous agent for any potential errors or improvements. The calculation
+involves the total number of gems in a treasure chest, with specific counts for diamonds, rubies, and emeralds based on
+given conditions. Confirm the accuracy of the arithmetic operations and the logical application of the conditions
+described.
+
+Let's review the calculations provided by the previous agent, MathAgent, for accuracy and logical consistency:
+
+1. **Number of Diamonds**: Given as 175.
+   - This is straightforward and requires no calculation.
+
+2. **Number of Rubies**: Calculated as 35 fewer than the number of diamonds.
+   - Calculation: \(175 - 35 = 140\)
+   - This is correctly calculated based on the information provided.
+
+3. **Number of Emeralds**: Calculated as twice the number of rubies.
+   - Calculation: \(2 \times 140 = 280\)
+   - This is also correctly calculated based on the information provided.
+
+4. **Total Number of Gems**: Sum of diamonds, rubies, and emeralds.
+   - Calculation: \(175 + 140 + 280\)
+   - Adding these numbers gives \(595\), which matches the total provided by the previous agent.
+
+Based on the review, the arithmetic operations are correctly executed, and the logical application of the conditions (35
+fewer rubies than diamonds and twice as many emeralds as rubies) is accurately applied. The total number of gems
+calculated as 595 appears to be correct.
+
+No errors or improvements are needed for the calculations provided. The previous agent has accurately computed the total
+number of gems in the treasure chest based on the conditions and numbers given.
+------------------------------------------------------------------------------------------------------------------------
 ```
 
 ### DynamicExecution
@@ -116,13 +184,15 @@ The `DynamicExecution` class accepts three arguments:
 ```python
 from beehive.invokable.agent import BeehiveAgent
 from beehive.invokable.beehive import Beehive, DynamicExecution
-from beehive.models.openai import OpenAIModel
+from beehive.models.openai_model import OpenAIModel
+
+backstory_template = "{backstory} You are collaborating with other assistants powered by language models. Answer questions to the best of your ability. It is acceptable if you cannot fully complete the task, as other agents will build on your work. Your goal is to provide valuable input that moves the task forward."
 
 researcher = BeehiveAgent(
     name="Researcher",
-    backstory="You are a researcher that has access to the web via your tools."
+    backstory=backstory_template.format(backstory="You are a researcher that has access to the web via your tools."),
     model=OpenAIModel(
-        model="gpt-3.5-turbo-0125",
+        model="gpt-4-turbo",
         api_key="<your_api_key>",
     ),
     tools=[tavily_search_tool],  # tool for surfing the web
@@ -132,9 +202,9 @@ researcher = BeehiveAgent(
 
 chart_generator = BeehiveAgent(
     name="ChartGenerator",
-    backstory="You are a data analyst that specializes in writing and executing code to produce visualizations.",
+    backstory=backstory_template.format(backstory="You are a data analyst that specializes in writing and executing code to produce visualizations."),
     model=OpenAIModel(
-        model="gpt-3.5-turbo-0125",
+        model="gpt-4-turbo",
         api_key="<your_api_key>",
     ),
     tools=[python_repl],  # tool for executing Python code
@@ -143,9 +213,9 @@ chart_generator = BeehiveAgent(
 )
 chart_generator_qc = BeehiveAgent(
     name="ChartGeneratorCritic",
-    backstory="You are an expert QA engineer who specializes in identifying errors in Python code.",
+    backstory=backstory_template.format(backstory="You are an expert QA engineer who specializes in identifying errors in Python code."),
     model=OpenAIModel(
-        model="gpt-3.5-turbo-0125",
+        model="gpt-4-turbo",
         api_key="<your_api_key>",
     ),
     history=True,
@@ -155,7 +225,7 @@ chart_generator_qc = BeehiveAgent(
 workflow = Beehive(
     name="CalculationBeehive",
     model=OpenAIModel(
-        model="gpt-3.5-turbo-0125",
+        model="gpt-4-turbo",
         api_key="<your_api_key>",
     ),
     execution_process=DynamicExecution(
@@ -189,7 +259,52 @@ In this Beehive, we have three agents: a `Researcher` agent that browses the int
 
 When the Beehive executes, here is what is printed to `stdout`:
 ```
-[[ TODO ]]
+------------------------------------------------------------------------------------------------------------------------
+CalculationBeehive / Researcher
+
+Please search the web to find the most recent data on the UK's GDP for the past five years. Compile this data into a
+list, including the GDP values and corresponding years. Then, pass this information to the next agent who will create a
+line graph based on the data provided.
+
+ The UK GDP for the past five years is as follows:
+- 2023: GDP was not provided in the data.
+- 2022: GDP data was not available in the provided sources.
+- 2021: GDP was $3,141.51 billion with a growth rate of 8.67%.
+- 2020: GDP was $2,697.81 billion with a growth rate of -10.36%.
+- 2019: GDP was $2,851.41 billion with a growth rate of 1.64%.
+
+Please note that the most recent data available is for 2021.
+------------------------------------------------------------------------------------------------------------------------
+CalculationBeehive / Router
+
+Sending conversation to ChartGenerator next!
+------------------------------------------------------------------------------------------------------------------------
+CalculationBeehive / ChartGenerator
+
+Create a line graph of the UK's GDP for the years 2019, 2020, and 2021 using the provided data: 2019: $2,851.41 billion,
+2020: $2,697.81 billion, 2021: $3,141.51 billion.
+
+[10/06/24 11:44:22] WARNING  Python REPL can execute arbitrary code. Use with caution.                                                                              python.py:17
+ Successfully executed:
+```python
+import matplotlib.pyplot as plt
+
+# Data for the UK's GDP for the years 2019, 2020, and 2021
+years = [2019, 2020, 2021]
+gdp_values = [2851.41, 2697.81, 3141.51]
+
+# Creating the line graph
+plt.figure(figsize=(10, 5))
+plt.plot(years, gdp_values, marker='o')
+plt.title('UK GDP from 2019 to 2021')
+plt.xlabel('Year')
+plt.ylabel('GDP in Billion USD')
+plt.grid(True)
+plt.xticks(years)
+plt.show()
+```
+Stdout: ModuleNotFoundError("No module named 'matplotlib'")
+------------------------------------------------------------------------------------------------------------------------
 ```
 
 ## Questioning
@@ -245,7 +360,7 @@ Here's what that would look like:
 ```python
 from beehive.invokable.agent import BeehiveAgent
 from beehive.invokable.beehive import Beehive, DynamicExecution
-from beehive.models.openai import OpenAIModel
+from beehive.models.openai_model import OpenAIModel
 
 researcher = BeehiveAgent(
     name="Researcher",

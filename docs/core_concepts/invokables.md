@@ -66,7 +66,7 @@ Here are the additional fields supported by the `BeehiveAgent` class.
 
 ```python
 from beehive.invokable.agent import BeehiveAgent
-from beehive.models.openai import OpenAIModel
+from beehive.models.openai_model import OpenAIModel
 
 math_agent = BeehiveAgent(
     name="MathAgent",
@@ -138,7 +138,7 @@ This was inspired by the work of [Li et. al](https://arxiv.org/pdf/2402.05120).
 
 ```python
 from beehive.invokable.ensemble import BeehiveEnsemble
-from beehive.models.openai import OpenAIModel
+from beehive.models.openai_model import OpenAIModel
 
 # Using similarity scores
 ensemble_similarity = BeehiveEnsemble(
@@ -193,7 +193,7 @@ This was inspired by the work of [Du et. al](https://arxiv.org/pdf/2305.14325).
 
 ```python
 from beehive.invokable.debate import BeehiveDebateTeam
-from beehive.models.openai import OpenAIModel
+from beehive.models.openai_model import OpenAIModel
 
 debaters = BeehiveDebateTeam(
     name="TestDebateTeam",

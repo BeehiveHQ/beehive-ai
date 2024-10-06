@@ -1,6 +1,5 @@
 import json
 import logging
-import re
 from typing import Literal, Tuple
 
 from langchain.chat_models.base import BaseChatModel
@@ -19,6 +18,7 @@ from beehive.invokable.types import (
     ExecutorOutput,
     InvokableQuestion,
 )
+from beehive.invokable.utils import _process_json_output
 from beehive.message import BHMessage, BHToolMessage, MessageRole
 from beehive.mixins.langchain import LangchainMixin
 from beehive.models.base import BHChatModel
@@ -254,12 +254,6 @@ class Beehive(Invokable):
         self._invokable_map = {x.name: x for x in self._invokables}
         return self
 
-    def process_router_output(self, router_content: str) -> str:
-        # Sometimes, the router wraps the JSON return in ```json...```. Remove these.
-        router_content = re.sub(r"\n", "", router_content)
-        router_content = re.sub(r"^(\`{3}json)(.*)(\`{3})$", r"\2", router_content)
-        return router_content
-
     def convert_non_bh_executor_output_to_message_list(
         self, invokable: Invokable, completion_output: ExecutorOutput
     ) -> Tuple[AnyBHMessageSequence, BHMessage | BHToolMessage]:
@@ -489,7 +483,7 @@ class Beehive(Invokable):
 
             try:
                 next_agent_json = json.loads(
-                    self.process_router_output(next_agent_message.content)
+                    _process_json_output(next_agent_message.content)
                 )
                 model_obj = pydantic_model(**next_agent_json)
                 break

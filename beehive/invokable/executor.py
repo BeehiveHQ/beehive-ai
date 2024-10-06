@@ -10,13 +10,19 @@ from pydantic import BaseModel, Field, InstanceOf, PrivateAttr, model_validator
 from sqlalchemy import select
 
 from beehive.invokable.base import Feedback, Invokable
-from beehive.invokable.types import AnyChatModel, BHStateElt, EmbeddingDistance, ExecutorOutput
+from beehive.invokable.types import (
+    AnyChatModel,
+    BHStateElt,
+    EmbeddingDistance,
+    ExecutorOutput,
+)
+from beehive.invokable.utils import _process_json_output
 from beehive.memory.db_storage import DbStorage, TaskModel
 from beehive.memory.feedback_storage import FeedbackStorage
 from beehive.message import BHMessage, BHToolMessage, MessageRole
 from beehive.models.base import BHEmbeddingModel
-from beehive.utilities.printer import Printer
 from beehive.prompts import EvaluationPrompt, FeedbackPrompt
+from beehive.utilities.printer import Printer
 
 logger = logging.getLogger(__file__)
 
@@ -104,10 +110,10 @@ class InvokableExecutor(BaseModel):
 
         # Hopefully, the LLM followed our format instructions
         try:
-            feedback_json = json.loads(str(feedback_message))
+            feedback_json = json.loads(_process_json_output(str(feedback_message)))
             return Feedback(**feedback_json)
         except json.JSONDecodeError:
-            print("Could not parse feedback!")
+            print(f"Could not parse feedback: {feedback_message}")
             return None
 
     def grab_feedback_for_invokable_execution(self) -> BHMessage | None:
