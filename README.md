@@ -44,11 +44,6 @@ pip install beehive-ai
 
 Note that the Python OpenAI client is included in the standard Beehive installation.
 
-Beehive also supports the following add-ons:
-
-- `pip install "beehive-ai[langchain]"`
-
-
 ## Documentation
 
-Check out the documentation [here](...).
+Check out the documentation [here](https://beehivehq.github.io/beehive-ai/).
