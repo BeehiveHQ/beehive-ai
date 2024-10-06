@@ -333,6 +333,8 @@
       
         
       
+        
+      
     
     
     
@@ -477,15 +479,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#questioning" class="md-nav__link">
-    <span class="md-ellipsis">
-      Questioning
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#increasing-complexity" class="md-nav__link">
     <span class="md-ellipsis">
       Increasing complexity
@@ -602,6 +595,27 @@
   
   <span class="md-ellipsis">
     Feedback
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../prompts/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Prompts
   </span>
   
 
@@ -737,39 +751,41 @@
 <p>The <code>FixedExecution</code> class accepts a single route — this is the route that the Beehive will use when sending the conversation from one invokable to the next.</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span> <span class="nn">beehive.invokable.agent</span> <span class="kn">import</span> <span class="n">BeehiveAgent</span>
 </span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="kn">from</span> <span class="nn">beehive.invokable.beehive</span> <span class="kn">import</span> <span class="n">Beehive</span><span class="p">,</span> <span class="n">FixedExecution</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="kn">from</span> <span class="nn">beehive.models.openai</span> <span class="kn">import</span> <span class="n">OpenAIModel</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="kn">from</span> <span class="nn">beehive.models.openai_model</span> <span class="kn">import</span> <span class="n">OpenAIModel</span>
 </span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="n">math_agent</span> <span class="o">=</span> <span class="n">BeehiveAgent</span><span class="p">(</span>
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;MathAgent&quot;</span><span class="p">,</span>
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="n">backstory</span><span class="o">=</span><span class="s2">&quot;You are a helpful AI assistant that specializes in performing complex calculations.&quot;</span><span class="p">,</span>
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    <span class="n">model</span><span class="o">=</span><span class="n">OpenAIModel</span><span class="p">(</span>
-</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>        <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-3.5-turbo&quot;</span><span class="p">,</span>
-</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>        <span class="n">api_key</span><span class="o">=</span><span class="s2">&quot;&lt;your_api_key&gt;&quot;</span>
-</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>    <span class="p">)</span>
-</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="p">)</span>
-</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>
-</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="n">math_qc_agent</span> <span class="o">=</span> <span class="n">BeehiveAgent</span><span class="p">(</span>
-</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;MathQCAgent&quot;</span><span class="p">,</span>
-</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>    <span class="n">backstory</span><span class="o">=</span><span class="s2">&quot;You are math critic who specializes in identifying errors in calculations.&quot;</span><span class="p">,</span>
-</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>    <span class="n">model</span><span class="o">=</span><span class="n">OpenAIModel</span><span class="p">(</span>
-</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>        <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-3.5-turbo-0125&quot;</span><span class="p">,</span>
-</span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>        <span class="n">api_key</span><span class="o">=</span><span class="s2">&quot;&lt;your_api_key&gt;&quot;</span><span class="p">,</span>
-</span><span id="__span-1-20"><a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>    <span class="p">),</span>
-</span><span id="__span-1-21"><a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a><span class="p">)</span>
-</span><span id="__span-1-22"><a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a>
-</span><span id="__span-1-23"><a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a><span class="n">workflow</span> <span class="o">=</span> <span class="n">Beehive</span><span class="p">(</span>
-</span><span id="__span-1-24"><a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a>    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;CalculationBeehive&quot;</span><span class="p">,</span>
-</span><span id="__span-1-25"><a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a>    <span class="n">model</span><span class="o">=</span><span class="n">OpenAIModel</span><span class="p">(</span>
-</span><span id="__span-1-26"><a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a>        <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-3.5-turbo-0125&quot;</span><span class="p">,</span>
-</span><span id="__span-1-27"><a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a>        <span class="n">api_key</span><span class="o">=</span><span class="s2">&quot;&lt;your_api_key&gt;&quot;</span><span class="p">,</span>
-</span><span id="__span-1-28"><a id="__codelineno-1-28" name="__codelineno-1-28" href="#__codelineno-1-28"></a>    <span class="p">),</span>
-</span><span id="__span-1-29"><a id="__codelineno-1-29" name="__codelineno-1-29" href="#__codelineno-1-29"></a>    <span class="n">execution_process</span><span class="o">=</span><span class="n">FixedExecution</span><span class="p">(</span>
-</span><span id="__span-1-30"><a id="__codelineno-1-30" name="__codelineno-1-30" href="#__codelineno-1-30"></a>        <span class="n">route</span><span class="o">=</span><span class="p">(</span><span class="n">math_agent</span> <span class="o">&gt;&gt;</span> <span class="n">math_qc_agent</span><span class="p">)</span>
-</span><span id="__span-1-31"><a id="__codelineno-1-31" name="__codelineno-1-31" href="#__codelineno-1-31"></a>    <span class="p">)</span>
-</span><span id="__span-1-32"><a id="__codelineno-1-32" name="__codelineno-1-32" href="#__codelineno-1-32"></a><span class="p">)</span>
-</span><span id="__span-1-33"><a id="__codelineno-1-33" name="__codelineno-1-33" href="#__codelineno-1-33"></a><span class="n">output</span> <span class="o">=</span> <span class="n">workflow</span><span class="o">.</span><span class="n">invoke</span><span class="p">(</span>
-</span><span id="__span-1-34"><a id="__codelineno-1-34" name="__codelineno-1-34" href="#__codelineno-1-34"></a>    <span class="n">task</span><span class="o">=</span><span class="s2">&quot;A treasure hunter found a buried treasure chest filled with gems. There were 175 diamonds, 35 fewer rubies than diamonds, and twice the number of emeralds than the rubies. How many of the gems were there in the chest?&quot;</span><span class="p">,</span>
-</span><span id="__span-1-35"><a id="__codelineno-1-35" name="__codelineno-1-35" href="#__codelineno-1-35"></a><span class="p">)</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="n">backstory_template</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{backstory}</span><span class="s2"> You are collaborating with other assistants powered by language models. Answer questions to the best of your ability. It is acceptable if you cannot fully complete the task, as other agents will build on your work. Your goal is to provide valuable input that moves the task forward.&quot;</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="n">math_agent</span> <span class="o">=</span> <span class="n">BeehiveAgent</span><span class="p">(</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;MathAgent&quot;</span><span class="p">,</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>    <span class="n">backstory</span><span class="o">=</span><span class="n">backstory_template</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">backstory</span><span class="o">=</span><span class="s2">&quot;You are a helpful AI assistant that specializes in performing complex calculations.&quot;</span><span class="p">),</span>
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>    <span class="n">model</span><span class="o">=</span><span class="n">OpenAIModel</span><span class="p">(</span>
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>        <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-3.5-turbo&quot;</span><span class="p">,</span>
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>        <span class="n">api_key</span><span class="o">=</span><span class="s2">&quot;&lt;your_api_key&gt;&quot;</span>
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>    <span class="p">)</span>
+</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="p">)</span>
+</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>
+</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="n">math_qc_agent</span> <span class="o">=</span> <span class="n">BeehiveAgent</span><span class="p">(</span>
+</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;MathQCAgent&quot;</span><span class="p">,</span>
+</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>    <span class="n">backstory</span><span class="o">=</span><span class="n">backstory_template</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">backstory</span><span class="o">=</span><span class="s2">&quot;You are math critic who specializes in identifying errors in calculations.&quot;</span><span class="p">),</span>
+</span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>    <span class="n">model</span><span class="o">=</span><span class="n">OpenAIModel</span><span class="p">(</span>
+</span><span id="__span-1-20"><a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>        <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-3.5-turbo-0125&quot;</span><span class="p">,</span>
+</span><span id="__span-1-21"><a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>        <span class="n">api_key</span><span class="o">=</span><span class="s2">&quot;&lt;your_api_key&gt;&quot;</span><span class="p">,</span>
+</span><span id="__span-1-22"><a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a>    <span class="p">),</span>
+</span><span id="__span-1-23"><a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a><span class="p">)</span>
+</span><span id="__span-1-24"><a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a>
+</span><span id="__span-1-25"><a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a><span class="n">workflow</span> <span class="o">=</span> <span class="n">Beehive</span><span class="p">(</span>
+</span><span id="__span-1-26"><a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a>    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;CalculationBeehive&quot;</span><span class="p">,</span>
+</span><span id="__span-1-27"><a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a>    <span class="n">model</span><span class="o">=</span><span class="n">OpenAIModel</span><span class="p">(</span>
+</span><span id="__span-1-28"><a id="__codelineno-1-28" name="__codelineno-1-28" href="#__codelineno-1-28"></a>        <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-3.5-turbo-0125&quot;</span><span class="p">,</span>
+</span><span id="__span-1-29"><a id="__codelineno-1-29" name="__codelineno-1-29" href="#__codelineno-1-29"></a>        <span class="n">api_key</span><span class="o">=</span><span class="s2">&quot;&lt;your_api_key&gt;&quot;</span><span class="p">,</span>
+</span><span id="__span-1-30"><a id="__codelineno-1-30" name="__codelineno-1-30" href="#__codelineno-1-30"></a>    <span class="p">),</span>
+</span><span id="__span-1-31"><a id="__codelineno-1-31" name="__codelineno-1-31" href="#__codelineno-1-31"></a>    <span class="n">execution_process</span><span class="o">=</span><span class="n">FixedExecution</span><span class="p">(</span>
+</span><span id="__span-1-32"><a id="__codelineno-1-32" name="__codelineno-1-32" href="#__codelineno-1-32"></a>        <span class="n">route</span><span class="o">=</span><span class="p">(</span><span class="n">math_agent</span> <span class="o">&gt;&gt;</span> <span class="n">math_qc_agent</span><span class="p">)</span>
+</span><span id="__span-1-33"><a id="__codelineno-1-33" name="__codelineno-1-33" href="#__codelineno-1-33"></a>    <span class="p">)</span>
+</span><span id="__span-1-34"><a id="__codelineno-1-34" name="__codelineno-1-34" href="#__codelineno-1-34"></a><span class="p">)</span>
+</span><span id="__span-1-35"><a id="__codelineno-1-35" name="__codelineno-1-35" href="#__codelineno-1-35"></a><span class="n">output</span> <span class="o">=</span> <span class="n">workflow</span><span class="o">.</span><span class="n">invoke</span><span class="p">(</span>
+</span><span id="__span-1-36"><a id="__codelineno-1-36" name="__codelineno-1-36" href="#__codelineno-1-36"></a>    <span class="n">task</span><span class="o">=</span><span class="s2">&quot;A treasure hunter found a buried treasure chest filled with gems. There were 175 diamonds, 35 fewer rubies than diamonds, and twice the number of emeralds than the rubies. How many of the gems were there in the chest?&quot;</span><span class="p">,</span>
+</span><span id="__span-1-37"><a id="__codelineno-1-37" name="__codelineno-1-37" href="#__codelineno-1-37"></a><span class="p">)</span>
 </span></code></pre></div>
 <p>As you can see, in our <code>FixedExecution</code> configuration, we specified a route that starts at <code>math_agent</code> and ends at <code>math_qc_agent</code>. Here's what happens under the hood:</p>
 <ul>
@@ -777,7 +793,73 @@
 <li>After <code>MathAgent</code> finishes, Beehive will use its output and craft a prompt for the next invokable in the route, namely <code>MathQCAgent</code>.</li>
 </ul>
 <p>When the Beehive executes, here is what is printed to <code>stdout</code>:
-<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>[[ TODO ]]
+<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>------------------------------------------------------------------------------------------------------------------------
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>CalculationBeehive / MathAgent
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>Calculate the total number of gems in a treasure chest given the following: there are 175 diamonds, 35 fewer rubies than
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>diamonds, and twice the number of emeralds as rubies. Provide the calculation steps and the final total.
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>To find the total number of gems in the treasure chest, we need to calculate the number of each type of gem and then sum
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>them up.
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>1. **Number of Diamonds**: Given as 175.
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>
+</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>2. **Number of Rubies**: There are 35 fewer rubies than diamonds.
+</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>   \[
+</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>   \text{Number of Rubies} = 175 - 35 = 140
+</span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>   \]
+</span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>
+</span><span id="__span-2-17"><a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>3. **Number of Emeralds**: There are twice the number of emeralds as rubies.
+</span><span id="__span-2-18"><a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a>   \[
+</span><span id="__span-2-19"><a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a>   \text{Number of Emeralds} = 2 \times 140 = 280
+</span><span id="__span-2-20"><a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a>   \]
+</span><span id="__span-2-21"><a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a>
+</span><span id="__span-2-22"><a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a>Now, add all these together to find the total number of gems:
+</span><span id="__span-2-23"><a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a>\[
+</span><span id="__span-2-24"><a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a>\text{Total Number of Gems} = \text{Number of Diamonds} + \text{Number of Rubies} + \text{Number of Emeralds} = 175 +
+</span><span id="__span-2-25"><a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a>140 + 280
+</span><span id="__span-2-26"><a id="__codelineno-2-26" name="__codelineno-2-26" href="#__codelineno-2-26"></a>\]
+</span><span id="__span-2-27"><a id="__codelineno-2-27" name="__codelineno-2-27" href="#__codelineno-2-27"></a>\[
+</span><span id="__span-2-28"><a id="__codelineno-2-28" name="__codelineno-2-28" href="#__codelineno-2-28"></a>\text{Total Number of Gems} = 595
+</span><span id="__span-2-29"><a id="__codelineno-2-29" name="__codelineno-2-29" href="#__codelineno-2-29"></a>\]
+</span><span id="__span-2-30"><a id="__codelineno-2-30" name="__codelineno-2-30" href="#__codelineno-2-30"></a>
+</span><span id="__span-2-31"><a id="__codelineno-2-31" name="__codelineno-2-31" href="#__codelineno-2-31"></a>Thus, the treasure chest contains a total of 595 gems.
+</span><span id="__span-2-32"><a id="__codelineno-2-32" name="__codelineno-2-32" href="#__codelineno-2-32"></a>------------------------------------------------------------------------------------------------------------------------
+</span><span id="__span-2-33"><a id="__codelineno-2-33" name="__codelineno-2-33" href="#__codelineno-2-33"></a>CalculationBeehive / Router
+</span><span id="__span-2-34"><a id="__codelineno-2-34" name="__codelineno-2-34" href="#__codelineno-2-34"></a>
+</span><span id="__span-2-35"><a id="__codelineno-2-35" name="__codelineno-2-35" href="#__codelineno-2-35"></a>Sending conversation to MathQCAgent next!
+</span><span id="__span-2-36"><a id="__codelineno-2-36" name="__codelineno-2-36" href="#__codelineno-2-36"></a>------------------------------------------------------------------------------------------------------------------------
+</span><span id="__span-2-37"><a id="__codelineno-2-37" name="__codelineno-2-37" href="#__codelineno-2-37"></a>CalculationBeehive / MathQCAgent
+</span><span id="__span-2-38"><a id="__codelineno-2-38" name="__codelineno-2-38" href="#__codelineno-2-38"></a>
+</span><span id="__span-2-39"><a id="__codelineno-2-39" name="__codelineno-2-39" href="#__codelineno-2-39"></a>Please review the calculation provided by the previous agent for any potential errors or improvements. The calculation
+</span><span id="__span-2-40"><a id="__codelineno-2-40" name="__codelineno-2-40" href="#__codelineno-2-40"></a>involves the total number of gems in a treasure chest, with specific counts for diamonds, rubies, and emeralds based on
+</span><span id="__span-2-41"><a id="__codelineno-2-41" name="__codelineno-2-41" href="#__codelineno-2-41"></a>given conditions. Confirm the accuracy of the arithmetic operations and the logical application of the conditions
+</span><span id="__span-2-42"><a id="__codelineno-2-42" name="__codelineno-2-42" href="#__codelineno-2-42"></a>described.
+</span><span id="__span-2-43"><a id="__codelineno-2-43" name="__codelineno-2-43" href="#__codelineno-2-43"></a>
+</span><span id="__span-2-44"><a id="__codelineno-2-44" name="__codelineno-2-44" href="#__codelineno-2-44"></a>Let&#39;s review the calculations provided by the previous agent, MathAgent, for accuracy and logical consistency:
+</span><span id="__span-2-45"><a id="__codelineno-2-45" name="__codelineno-2-45" href="#__codelineno-2-45"></a>
+</span><span id="__span-2-46"><a id="__codelineno-2-46" name="__codelineno-2-46" href="#__codelineno-2-46"></a>1. **Number of Diamonds**: Given as 175.
+</span><span id="__span-2-47"><a id="__codelineno-2-47" name="__codelineno-2-47" href="#__codelineno-2-47"></a>   - This is straightforward and requires no calculation.
+</span><span id="__span-2-48"><a id="__codelineno-2-48" name="__codelineno-2-48" href="#__codelineno-2-48"></a>
+</span><span id="__span-2-49"><a id="__codelineno-2-49" name="__codelineno-2-49" href="#__codelineno-2-49"></a>2. **Number of Rubies**: Calculated as 35 fewer than the number of diamonds.
+</span><span id="__span-2-50"><a id="__codelineno-2-50" name="__codelineno-2-50" href="#__codelineno-2-50"></a>   - Calculation: \(175 - 35 = 140\)
+</span><span id="__span-2-51"><a id="__codelineno-2-51" name="__codelineno-2-51" href="#__codelineno-2-51"></a>   - This is correctly calculated based on the information provided.
+</span><span id="__span-2-52"><a id="__codelineno-2-52" name="__codelineno-2-52" href="#__codelineno-2-52"></a>
+</span><span id="__span-2-53"><a id="__codelineno-2-53" name="__codelineno-2-53" href="#__codelineno-2-53"></a>3. **Number of Emeralds**: Calculated as twice the number of rubies.
+</span><span id="__span-2-54"><a id="__codelineno-2-54" name="__codelineno-2-54" href="#__codelineno-2-54"></a>   - Calculation: \(2 \times 140 = 280\)
+</span><span id="__span-2-55"><a id="__codelineno-2-55" name="__codelineno-2-55" href="#__codelineno-2-55"></a>   - This is also correctly calculated based on the information provided.
+</span><span id="__span-2-56"><a id="__codelineno-2-56" name="__codelineno-2-56" href="#__codelineno-2-56"></a>
+</span><span id="__span-2-57"><a id="__codelineno-2-57" name="__codelineno-2-57" href="#__codelineno-2-57"></a>4. **Total Number of Gems**: Sum of diamonds, rubies, and emeralds.
+</span><span id="__span-2-58"><a id="__codelineno-2-58" name="__codelineno-2-58" href="#__codelineno-2-58"></a>   - Calculation: \(175 + 140 + 280\)
+</span><span id="__span-2-59"><a id="__codelineno-2-59" name="__codelineno-2-59" href="#__codelineno-2-59"></a>   - Adding these numbers gives \(595\), which matches the total provided by the previous agent.
+</span><span id="__span-2-60"><a id="__codelineno-2-60" name="__codelineno-2-60" href="#__codelineno-2-60"></a>
+</span><span id="__span-2-61"><a id="__codelineno-2-61" name="__codelineno-2-61" href="#__codelineno-2-61"></a>Based on the review, the arithmetic operations are correctly executed, and the logical application of the conditions (35
+</span><span id="__span-2-62"><a id="__codelineno-2-62" name="__codelineno-2-62" href="#__codelineno-2-62"></a>fewer rubies than diamonds and twice as many emeralds as rubies) is accurately applied. The total number of gems
+</span><span id="__span-2-63"><a id="__codelineno-2-63" name="__codelineno-2-63" href="#__codelineno-2-63"></a>calculated as 595 appears to be correct.
+</span><span id="__span-2-64"><a id="__codelineno-2-64" name="__codelineno-2-64" href="#__codelineno-2-64"></a>
+</span><span id="__span-2-65"><a id="__codelineno-2-65" name="__codelineno-2-65" href="#__codelineno-2-65"></a>No errors or improvements are needed for the calculations provided. The previous agent has accurately computed the total
+</span><span id="__span-2-66"><a id="__codelineno-2-66" name="__codelineno-2-66" href="#__codelineno-2-66"></a>number of gems in the treasure chest based on the conditions and numbers given.
+</span><span id="__span-2-67"><a id="__codelineno-2-67" name="__codelineno-2-67" href="#__codelineno-2-67"></a>------------------------------------------------------------------------------------------------------------------------
 </span></code></pre></div></p>
 <h3 id="dynamicexecution">DynamicExecution<a class="headerlink" href="#dynamicexecution" title="Permanent link">&para;</a></h3>
 <p>The <code>DynamicExecution</code> class accepts three arguments:</p>
@@ -788,65 +870,67 @@
 </ul>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">from</span> <span class="nn">beehive.invokable.agent</span> <span class="kn">import</span> <span class="n">BeehiveAgent</span>
 </span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="kn">from</span> <span class="nn">beehive.invokable.beehive</span> <span class="kn">import</span> <span class="n">Beehive</span><span class="p">,</span> <span class="n">DynamicExecution</span>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="kn">from</span> <span class="nn">beehive.models.openai</span> <span class="kn">import</span> <span class="n">OpenAIModel</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="kn">from</span> <span class="nn">beehive.models.openai_model</span> <span class="kn">import</span> <span class="n">OpenAIModel</span>
 </span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="n">researcher</span> <span class="o">=</span> <span class="n">BeehiveAgent</span><span class="p">(</span>
-</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Researcher&quot;</span><span class="p">,</span>
-</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    <span class="n">backstory</span><span class="o">=</span><span class="s2">&quot;You are a researcher that has access to the web via your tools.&quot;</span>
-</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="n">model</span><span class="o">=</span><span class="n">OpenAIModel</span><span class="p">(</span>
-</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>        <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-3.5-turbo-0125&quot;</span><span class="p">,</span>
-</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>        <span class="n">api_key</span><span class="o">=</span><span class="s2">&quot;&lt;your_api_key&gt;&quot;</span><span class="p">,</span>
-</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>    <span class="p">),</span>
-</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>    <span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="n">tavily_search_tool</span><span class="p">],</span>  <span class="c1"># tool for surfing the web</span>
-</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>    <span class="n">history</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-</span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>    <span class="n">feedback</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-</span><span id="__span-3-15"><a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a><span class="p">)</span>
-</span><span id="__span-3-16"><a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a>
-</span><span id="__span-3-17"><a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a><span class="n">chart_generator</span> <span class="o">=</span> <span class="n">BeehiveAgent</span><span class="p">(</span>
-</span><span id="__span-3-18"><a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a>    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;ChartGenerator&quot;</span><span class="p">,</span>
-</span><span id="__span-3-19"><a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a>    <span class="n">backstory</span><span class="o">=</span><span class="s2">&quot;You are a data analyst that specializes in writing and executing code to produce visualizations.&quot;</span><span class="p">,</span>
-</span><span id="__span-3-20"><a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a>    <span class="n">model</span><span class="o">=</span><span class="n">OpenAIModel</span><span class="p">(</span>
-</span><span id="__span-3-21"><a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a>        <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-3.5-turbo-0125&quot;</span><span class="p">,</span>
-</span><span id="__span-3-22"><a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a>        <span class="n">api_key</span><span class="o">=</span><span class="s2">&quot;&lt;your_api_key&gt;&quot;</span><span class="p">,</span>
-</span><span id="__span-3-23"><a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a>    <span class="p">),</span>
-</span><span id="__span-3-24"><a id="__codelineno-3-24" name="__codelineno-3-24" href="#__codelineno-3-24"></a>    <span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="n">python_repl</span><span class="p">],</span>  <span class="c1"># tool for executing Python code</span>
-</span><span id="__span-3-25"><a id="__codelineno-3-25" name="__codelineno-3-25" href="#__codelineno-3-25"></a>    <span class="n">history</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-</span><span id="__span-3-26"><a id="__codelineno-3-26" name="__codelineno-3-26" href="#__codelineno-3-26"></a>    <span class="n">feedback</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-</span><span id="__span-3-27"><a id="__codelineno-3-27" name="__codelineno-3-27" href="#__codelineno-3-27"></a><span class="p">)</span>
-</span><span id="__span-3-28"><a id="__codelineno-3-28" name="__codelineno-3-28" href="#__codelineno-3-28"></a><span class="n">chart_generator_qc</span> <span class="o">=</span> <span class="n">BeehiveAgent</span><span class="p">(</span>
-</span><span id="__span-3-29"><a id="__codelineno-3-29" name="__codelineno-3-29" href="#__codelineno-3-29"></a>    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;ChartGeneratorCritic&quot;</span><span class="p">,</span>
-</span><span id="__span-3-30"><a id="__codelineno-3-30" name="__codelineno-3-30" href="#__codelineno-3-30"></a>    <span class="n">backstory</span><span class="o">=</span><span class="s2">&quot;You are an expert QA engineer who specializes in identifying errors in Python code.&quot;</span><span class="p">,</span>
-</span><span id="__span-3-31"><a id="__codelineno-3-31" name="__codelineno-3-31" href="#__codelineno-3-31"></a>    <span class="n">model</span><span class="o">=</span><span class="n">OpenAIModel</span><span class="p">(</span>
-</span><span id="__span-3-32"><a id="__codelineno-3-32" name="__codelineno-3-32" href="#__codelineno-3-32"></a>        <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-3.5-turbo-0125&quot;</span><span class="p">,</span>
-</span><span id="__span-3-33"><a id="__codelineno-3-33" name="__codelineno-3-33" href="#__codelineno-3-33"></a>        <span class="n">api_key</span><span class="o">=</span><span class="s2">&quot;&lt;your_api_key&gt;&quot;</span><span class="p">,</span>
-</span><span id="__span-3-34"><a id="__codelineno-3-34" name="__codelineno-3-34" href="#__codelineno-3-34"></a>    <span class="p">),</span>
-</span><span id="__span-3-35"><a id="__codelineno-3-35" name="__codelineno-3-35" href="#__codelineno-3-35"></a>    <span class="n">history</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-</span><span id="__span-3-36"><a id="__codelineno-3-36" name="__codelineno-3-36" href="#__codelineno-3-36"></a>    <span class="n">feedback</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-</span><span id="__span-3-37"><a id="__codelineno-3-37" name="__codelineno-3-37" href="#__codelineno-3-37"></a><span class="p">)</span>
-</span><span id="__span-3-38"><a id="__codelineno-3-38" name="__codelineno-3-38" href="#__codelineno-3-38"></a>
-</span><span id="__span-3-39"><a id="__codelineno-3-39" name="__codelineno-3-39" href="#__codelineno-3-39"></a><span class="n">workflow</span> <span class="o">=</span> <span class="n">Beehive</span><span class="p">(</span>
-</span><span id="__span-3-40"><a id="__codelineno-3-40" name="__codelineno-3-40" href="#__codelineno-3-40"></a>    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;CalculationBeehive&quot;</span><span class="p">,</span>
-</span><span id="__span-3-41"><a id="__codelineno-3-41" name="__codelineno-3-41" href="#__codelineno-3-41"></a>    <span class="n">model</span><span class="o">=</span><span class="n">OpenAIModel</span><span class="p">(</span>
-</span><span id="__span-3-42"><a id="__codelineno-3-42" name="__codelineno-3-42" href="#__codelineno-3-42"></a>        <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-3.5-turbo-0125&quot;</span><span class="p">,</span>
-</span><span id="__span-3-43"><a id="__codelineno-3-43" name="__codelineno-3-43" href="#__codelineno-3-43"></a>        <span class="n">api_key</span><span class="o">=</span><span class="s2">&quot;&lt;your_api_key&gt;&quot;</span><span class="p">,</span>
-</span><span id="__span-3-44"><a id="__codelineno-3-44" name="__codelineno-3-44" href="#__codelineno-3-44"></a>    <span class="p">),</span>
-</span><span id="__span-3-45"><a id="__codelineno-3-45" name="__codelineno-3-45" href="#__codelineno-3-45"></a>    <span class="n">execution_process</span><span class="o">=</span><span class="n">DynamicExecution</span><span class="p">(</span>
-</span><span id="__span-3-46"><a id="__codelineno-3-46" name="__codelineno-3-46" href="#__codelineno-3-46"></a>        <span class="n">edges</span><span class="o">=</span><span class="p">[</span>
-</span><span id="__span-3-47"><a id="__codelineno-3-47" name="__codelineno-3-47" href="#__codelineno-3-47"></a>            <span class="n">researcher</span> <span class="o">&gt;&gt;</span> <span class="n">chart_generator</span><span class="p">,</span>
-</span><span id="__span-3-48"><a id="__codelineno-3-48" name="__codelineno-3-48" href="#__codelineno-3-48"></a>            <span class="n">chart_generator</span> <span class="o">&gt;&gt;</span> <span class="n">chart_generator_qc</span><span class="p">,</span>
-</span><span id="__span-3-49"><a id="__codelineno-3-49" name="__codelineno-3-49" href="#__codelineno-3-49"></a>            <span class="n">chart_generator_qc</span> <span class="o">&gt;&gt;</span> <span class="n">researcher</span><span class="p">,</span>
-</span><span id="__span-3-50"><a id="__codelineno-3-50" name="__codelineno-3-50" href="#__codelineno-3-50"></a>        <span class="p">],</span>
-</span><span id="__span-3-51"><a id="__codelineno-3-51" name="__codelineno-3-51" href="#__codelineno-3-51"></a>        <span class="n">entrypoint</span><span class="o">=</span><span class="n">researcher</span><span class="p">,</span>
-</span><span id="__span-3-52"><a id="__codelineno-3-52" name="__codelineno-3-52" href="#__codelineno-3-52"></a>        <span class="n">llm_router_additional_instructions</span><span class="o">=</span><span class="p">{</span>
-</span><span id="__span-3-53"><a id="__codelineno-3-53" name="__codelineno-3-53" href="#__codelineno-3-53"></a>            <span class="n">chart_generator_qc</span><span class="p">:</span> <span class="p">[</span>
-</span><span id="__span-3-54"><a id="__codelineno-3-54" name="__codelineno-3-54" href="#__codelineno-3-54"></a>                <span class="s2">&quot;If you notice a `ModuleNotFoundError` in the code, then finish.</span>
-</span><span id="__span-3-55"><a id="__codelineno-3-55" name="__codelineno-3-55" href="#__codelineno-3-55"></a>            <span class="p">]</span>
-</span><span id="__span-3-56"><a id="__codelineno-3-56" name="__codelineno-3-56" href="#__codelineno-3-56"></a>        <span class="p">},</span>
-</span><span id="__span-3-57"><a id="__codelineno-3-57" name="__codelineno-3-57" href="#__codelineno-3-57"></a>    <span class="p">)</span>
-</span><span id="__span-3-58"><a id="__codelineno-3-58" name="__codelineno-3-58" href="#__codelineno-3-58"></a><span class="p">)</span>
-</span><span id="__span-3-59"><a id="__codelineno-3-59" name="__codelineno-3-59" href="#__codelineno-3-59"></a><span class="n">output</span> <span class="o">=</span> <span class="n">workflow</span><span class="o">.</span><span class="n">invoke</span><span class="p">(</span>
-</span><span id="__span-3-60"><a id="__codelineno-3-60" name="__codelineno-3-60" href="#__codelineno-3-60"></a>    <span class="s2">&quot;Fetch the UK&#39;s GDP over the past 5 years a draw a line graph of the data.&quot;</span>
-</span><span id="__span-3-61"><a id="__codelineno-3-61" name="__codelineno-3-61" href="#__codelineno-3-61"></a><span class="p">)</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="n">backstory_template</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{backstory}</span><span class="s2"> You are collaborating with other assistants powered by language models. Answer questions to the best of your ability. It is acceptable if you cannot fully complete the task, as other agents will build on your work. Your goal is to provide valuable input that moves the task forward.&quot;</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="n">researcher</span> <span class="o">=</span> <span class="n">BeehiveAgent</span><span class="p">(</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Researcher&quot;</span><span class="p">,</span>
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>    <span class="n">backstory</span><span class="o">=</span><span class="n">backstory_template</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">backstory</span><span class="o">=</span><span class="s2">&quot;You are a researcher that has access to the web via your tools.&quot;</span><span class="p">),</span>
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>    <span class="n">model</span><span class="o">=</span><span class="n">OpenAIModel</span><span class="p">(</span>
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>        <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4-turbo&quot;</span><span class="p">,</span>
+</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>        <span class="n">api_key</span><span class="o">=</span><span class="s2">&quot;&lt;your_api_key&gt;&quot;</span><span class="p">,</span>
+</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>    <span class="p">),</span>
+</span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>    <span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="n">tavily_search_tool</span><span class="p">],</span>  <span class="c1"># tool for surfing the web</span>
+</span><span id="__span-3-15"><a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>    <span class="n">history</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+</span><span id="__span-3-16"><a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a>    <span class="n">feedback</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+</span><span id="__span-3-17"><a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a><span class="p">)</span>
+</span><span id="__span-3-18"><a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a>
+</span><span id="__span-3-19"><a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a><span class="n">chart_generator</span> <span class="o">=</span> <span class="n">BeehiveAgent</span><span class="p">(</span>
+</span><span id="__span-3-20"><a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a>    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;ChartGenerator&quot;</span><span class="p">,</span>
+</span><span id="__span-3-21"><a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a>    <span class="n">backstory</span><span class="o">=</span><span class="n">backstory_template</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">backstory</span><span class="o">=</span><span class="s2">&quot;You are a data analyst that specializes in writing and executing code to produce visualizations.&quot;</span><span class="p">),</span>
+</span><span id="__span-3-22"><a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a>    <span class="n">model</span><span class="o">=</span><span class="n">OpenAIModel</span><span class="p">(</span>
+</span><span id="__span-3-23"><a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a>        <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4-turbo&quot;</span><span class="p">,</span>
+</span><span id="__span-3-24"><a id="__codelineno-3-24" name="__codelineno-3-24" href="#__codelineno-3-24"></a>        <span class="n">api_key</span><span class="o">=</span><span class="s2">&quot;&lt;your_api_key&gt;&quot;</span><span class="p">,</span>
+</span><span id="__span-3-25"><a id="__codelineno-3-25" name="__codelineno-3-25" href="#__codelineno-3-25"></a>    <span class="p">),</span>
+</span><span id="__span-3-26"><a id="__codelineno-3-26" name="__codelineno-3-26" href="#__codelineno-3-26"></a>    <span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="n">python_repl</span><span class="p">],</span>  <span class="c1"># tool for executing Python code</span>
+</span><span id="__span-3-27"><a id="__codelineno-3-27" name="__codelineno-3-27" href="#__codelineno-3-27"></a>    <span class="n">history</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+</span><span id="__span-3-28"><a id="__codelineno-3-28" name="__codelineno-3-28" href="#__codelineno-3-28"></a>    <span class="n">feedback</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+</span><span id="__span-3-29"><a id="__codelineno-3-29" name="__codelineno-3-29" href="#__codelineno-3-29"></a><span class="p">)</span>
+</span><span id="__span-3-30"><a id="__codelineno-3-30" name="__codelineno-3-30" href="#__codelineno-3-30"></a><span class="n">chart_generator_qc</span> <span class="o">=</span> <span class="n">BeehiveAgent</span><span class="p">(</span>
+</span><span id="__span-3-31"><a id="__codelineno-3-31" name="__codelineno-3-31" href="#__codelineno-3-31"></a>    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;ChartGeneratorCritic&quot;</span><span class="p">,</span>
+</span><span id="__span-3-32"><a id="__codelineno-3-32" name="__codelineno-3-32" href="#__codelineno-3-32"></a>    <span class="n">backstory</span><span class="o">=</span><span class="n">backstory_template</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">backstory</span><span class="o">=</span><span class="s2">&quot;You are an expert QA engineer who specializes in identifying errors in Python code.&quot;</span><span class="p">),</span>
+</span><span id="__span-3-33"><a id="__codelineno-3-33" name="__codelineno-3-33" href="#__codelineno-3-33"></a>    <span class="n">model</span><span class="o">=</span><span class="n">OpenAIModel</span><span class="p">(</span>
+</span><span id="__span-3-34"><a id="__codelineno-3-34" name="__codelineno-3-34" href="#__codelineno-3-34"></a>        <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4-turbo&quot;</span><span class="p">,</span>
+</span><span id="__span-3-35"><a id="__codelineno-3-35" name="__codelineno-3-35" href="#__codelineno-3-35"></a>        <span class="n">api_key</span><span class="o">=</span><span class="s2">&quot;&lt;your_api_key&gt;&quot;</span><span class="p">,</span>
+</span><span id="__span-3-36"><a id="__codelineno-3-36" name="__codelineno-3-36" href="#__codelineno-3-36"></a>    <span class="p">),</span>
+</span><span id="__span-3-37"><a id="__codelineno-3-37" name="__codelineno-3-37" href="#__codelineno-3-37"></a>    <span class="n">history</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+</span><span id="__span-3-38"><a id="__codelineno-3-38" name="__codelineno-3-38" href="#__codelineno-3-38"></a>    <span class="n">feedback</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+</span><span id="__span-3-39"><a id="__codelineno-3-39" name="__codelineno-3-39" href="#__codelineno-3-39"></a><span class="p">)</span>
+</span><span id="__span-3-40"><a id="__codelineno-3-40" name="__codelineno-3-40" href="#__codelineno-3-40"></a>
+</span><span id="__span-3-41"><a id="__codelineno-3-41" name="__codelineno-3-41" href="#__codelineno-3-41"></a><span class="n">workflow</span> <span class="o">=</span> <span class="n">Beehive</span><span class="p">(</span>
+</span><span id="__span-3-42"><a id="__codelineno-3-42" name="__codelineno-3-42" href="#__codelineno-3-42"></a>    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;CalculationBeehive&quot;</span><span class="p">,</span>
+</span><span id="__span-3-43"><a id="__codelineno-3-43" name="__codelineno-3-43" href="#__codelineno-3-43"></a>    <span class="n">model</span><span class="o">=</span><span class="n">OpenAIModel</span><span class="p">(</span>
+</span><span id="__span-3-44"><a id="__codelineno-3-44" name="__codelineno-3-44" href="#__codelineno-3-44"></a>        <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4-turbo&quot;</span><span class="p">,</span>
+</span><span id="__span-3-45"><a id="__codelineno-3-45" name="__codelineno-3-45" href="#__codelineno-3-45"></a>        <span class="n">api_key</span><span class="o">=</span><span class="s2">&quot;&lt;your_api_key&gt;&quot;</span><span class="p">,</span>
+</span><span id="__span-3-46"><a id="__codelineno-3-46" name="__codelineno-3-46" href="#__codelineno-3-46"></a>    <span class="p">),</span>
+</span><span id="__span-3-47"><a id="__codelineno-3-47" name="__codelineno-3-47" href="#__codelineno-3-47"></a>    <span class="n">execution_process</span><span class="o">=</span><span class="n">DynamicExecution</span><span class="p">(</span>
+</span><span id="__span-3-48"><a id="__codelineno-3-48" name="__codelineno-3-48" href="#__codelineno-3-48"></a>        <span class="n">edges</span><span class="o">=</span><span class="p">[</span>
+</span><span id="__span-3-49"><a id="__codelineno-3-49" name="__codelineno-3-49" href="#__codelineno-3-49"></a>            <span class="n">researcher</span> <span class="o">&gt;&gt;</span> <span class="n">chart_generator</span><span class="p">,</span>
+</span><span id="__span-3-50"><a id="__codelineno-3-50" name="__codelineno-3-50" href="#__codelineno-3-50"></a>            <span class="n">chart_generator</span> <span class="o">&gt;&gt;</span> <span class="n">chart_generator_qc</span><span class="p">,</span>
+</span><span id="__span-3-51"><a id="__codelineno-3-51" name="__codelineno-3-51" href="#__codelineno-3-51"></a>            <span class="n">chart_generator_qc</span> <span class="o">&gt;&gt;</span> <span class="n">researcher</span><span class="p">,</span>
+</span><span id="__span-3-52"><a id="__codelineno-3-52" name="__codelineno-3-52" href="#__codelineno-3-52"></a>        <span class="p">],</span>
+</span><span id="__span-3-53"><a id="__codelineno-3-53" name="__codelineno-3-53" href="#__codelineno-3-53"></a>        <span class="n">entrypoint</span><span class="o">=</span><span class="n">researcher</span><span class="p">,</span>
+</span><span id="__span-3-54"><a id="__codelineno-3-54" name="__codelineno-3-54" href="#__codelineno-3-54"></a>        <span class="n">llm_router_additional_instructions</span><span class="o">=</span><span class="p">{</span>
+</span><span id="__span-3-55"><a id="__codelineno-3-55" name="__codelineno-3-55" href="#__codelineno-3-55"></a>            <span class="n">chart_generator_qc</span><span class="p">:</span> <span class="p">[</span>
+</span><span id="__span-3-56"><a id="__codelineno-3-56" name="__codelineno-3-56" href="#__codelineno-3-56"></a>                <span class="s2">&quot;If you notice a `ModuleNotFoundError` in the code, then finish.</span>
+</span><span id="__span-3-57"><a id="__codelineno-3-57" name="__codelineno-3-57" href="#__codelineno-3-57"></a>            <span class="p">]</span>
+</span><span id="__span-3-58"><a id="__codelineno-3-58" name="__codelineno-3-58" href="#__codelineno-3-58"></a>        <span class="p">},</span>
+</span><span id="__span-3-59"><a id="__codelineno-3-59" name="__codelineno-3-59" href="#__codelineno-3-59"></a>    <span class="p">)</span>
+</span><span id="__span-3-60"><a id="__codelineno-3-60" name="__codelineno-3-60" href="#__codelineno-3-60"></a><span class="p">)</span>
+</span><span id="__span-3-61"><a id="__codelineno-3-61" name="__codelineno-3-61" href="#__codelineno-3-61"></a><span class="n">output</span> <span class="o">=</span> <span class="n">workflow</span><span class="o">.</span><span class="n">invoke</span><span class="p">(</span>
+</span><span id="__span-3-62"><a id="__codelineno-3-62" name="__codelineno-3-62" href="#__codelineno-3-62"></a>    <span class="s2">&quot;Fetch the UK&#39;s GDP over the past 5 years a draw a line graph of the data.&quot;</span>
+</span><span id="__span-3-63"><a id="__codelineno-3-63" name="__codelineno-3-63" href="#__codelineno-3-63"></a><span class="p">)</span>
 </span></code></pre></div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -860,37 +944,84 @@
 <li>After the <code>ChartGeneratorQC</code> agent finishes, Beehive determines if additional action is needed. Note here that, when making this determination, Beehive uses the <code>llm_router_additional_instructions</code> that the user specified for <code>ChartGeneratorQC</code> — namely, that if this agent noticed a <code>ModuleNotFoundError</code> in the code that the <code>ChartGenerator</code> produced, then it should finish. Based on this determination, the Beehive will either finish or will send the conversation back to the <code>Researcher</code> agent.</li>
 </ul>
 <p>When the Beehive executes, here is what is printed to <code>stdout</code>:
-<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>[[ TODO ]]
-</span></code></pre></div></p>
-<h2 id="questioning">Questioning<a class="headerlink" href="#questioning" title="Permanent link">&para;</a></h2>
-<p>In addition to specifying the execution process (fixed or dynamic), you can also enable invokables to directly ask one another questions via the <code>enable_questioning</code> keyword argument. When set to <code>True</code>, invokables can ask clarifying questions to any invokable that has acted before them (or any invokable that has a route leading to them, in the case of a <code>DynamicExecutionProcess</code>).</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Allowing questions is almost certainly possible via the router through some clever prompt engineering. However, <code>enable_questioning</code> is an easier way to support this behavior!</p>
-</div>
-<p>Here's an example where the field is enabled:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="o">...</span>
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="n">workflow</span> <span class="o">=</span> <span class="n">Beehive</span><span class="p">(</span>
-</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;CalculationBeehive&quot;</span><span class="p">,</span>
-</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>    <span class="n">model</span><span class="o">=</span><span class="n">OpenAIModel</span><span class="p">(</span>
-</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>        <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-3.5-turbo-0125&quot;</span><span class="p">,</span>
-</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>        <span class="n">api_key</span><span class="o">=</span><span class="s2">&quot;&lt;your_api_key&gt;&quot;</span><span class="p">,</span>
-</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>    <span class="p">),</span>
-</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>    <span class="n">execution_process</span><span class="o">=</span><span class="n">DynamicExecution</span><span class="p">(</span>
-</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>        <span class="n">edges</span><span class="o">=</span><span class="p">[</span>
-</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>            <span class="n">researcher</span> <span class="o">&gt;&gt;</span> <span class="n">chart_generator</span><span class="p">,</span>
-</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>            <span class="n">chart_generator</span> <span class="o">&gt;&gt;</span> <span class="n">chart_generator_qc</span><span class="p">,</span>
-</span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>            <span class="n">chart_generator_qc</span> <span class="o">&gt;&gt;</span> <span class="n">researcher</span><span class="p">,</span>
-</span><span id="__span-5-13"><a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>        <span class="p">],</span>
-</span><span id="__span-5-14"><a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>        <span class="n">entrypoint</span><span class="o">=</span><span class="n">researcher</span><span class="p">,</span>
-</span><span id="__span-5-15"><a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a>        <span class="n">llm_router_additional_instructions</span><span class="o">=</span><span class="p">{</span>
-</span><span id="__span-5-16"><a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a>            <span class="n">chart_generator_qc</span><span class="p">:</span> <span class="p">[</span>
-</span><span id="__span-5-17"><a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a>                <span class="s2">&quot;If you notice a `ModuleNotFoundError` in the code, then finish.</span>
-</span><span id="__span-5-18"><a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a>            <span class="p">]</span>
-</span><span id="__span-5-19"><a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a>        <span class="p">},</span>
-</span><span id="__span-5-20"><a id="__codelineno-5-20" name="__codelineno-5-20" href="#__codelineno-5-20"></a>    <span class="p">),</span>
-</span><span id="__span-5-21"><a id="__codelineno-5-21" name="__codelineno-5-21" href="#__codelineno-5-21"></a>    <span class="n">enable_questioning</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-</span><span id="__span-5-22"><a id="__codelineno-5-22" name="__codelineno-5-22" href="#__codelineno-5-22"></a><span class="p">)</span>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>------------------------------------------------------------------------------------------------------------------------
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>CalculationBeehive / Researcher
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>Please search the web to find the most recent data on the UK&#39;s GDP for the past five years. Compile this data into a
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>list, including the GDP values and corresponding years. Then, pass this information to the next agent who will create a
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>line graph based on the data provided.
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a> The UK GDP for the past five years is as follows:
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>- 2023: GDP was not provided in the data.
+</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>- 2022: GDP data was not available in the provided sources.
+</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>- 2021: GDP was $3,141.51 billion with a growth rate of 8.67%.
+</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>- 2020: GDP was $2,697.81 billion with a growth rate of -10.36%.
+</span><span id="__span-4-13"><a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a>- 2019: GDP was $2,851.41 billion with a growth rate of 1.64%.
+</span><span id="__span-4-14"><a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a>
+</span><span id="__span-4-15"><a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a>Please note that the most recent data available is for 2021.
+</span><span id="__span-4-16"><a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a>------------------------------------------------------------------------------------------------------------------------
+</span><span id="__span-4-17"><a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a>CalculationBeehive / Router
+</span><span id="__span-4-18"><a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a>
+</span><span id="__span-4-19"><a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a>Sending conversation to ChartGenerator next!
+</span><span id="__span-4-20"><a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a>------------------------------------------------------------------------------------------------------------------------
+</span><span id="__span-4-21"><a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a>CalculationBeehive / ChartGenerator
+</span><span id="__span-4-22"><a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a>
+</span><span id="__span-4-23"><a id="__codelineno-4-23" name="__codelineno-4-23" href="#__codelineno-4-23"></a>Create a line graph of the UK&#39;s GDP for the years 2019, 2020, and 2021 using the provided data: 2019: $2,851.41 billion,
+</span><span id="__span-4-24"><a id="__codelineno-4-24" name="__codelineno-4-24" href="#__codelineno-4-24"></a>2020: $2,697.81 billion, 2021: $3,141.51 billion.
+</span><span id="__span-4-25"><a id="__codelineno-4-25" name="__codelineno-4-25" href="#__codelineno-4-25"></a>
+</span><span id="__span-4-26"><a id="__codelineno-4-26" name="__codelineno-4-26" href="#__codelineno-4-26"></a>[10/06/24 11:44:22] WARNING  Python REPL can execute arbitrary code. Use with caution.                                                                              python.py:17
+</span><span id="__span-4-27"><a id="__codelineno-4-27" name="__codelineno-4-27" href="#__codelineno-4-27"></a> Successfully executed:
+</span><span id="__span-4-28"><a id="__codelineno-4-28" name="__codelineno-4-28" href="#__codelineno-4-28"></a>```python
+</span><span id="__span-4-29"><a id="__codelineno-4-29" name="__codelineno-4-29" href="#__codelineno-4-29"></a>import matplotlib.pyplot as plt
+</span><span id="__span-4-30"><a id="__codelineno-4-30" name="__codelineno-4-30" href="#__codelineno-4-30"></a>
+</span><span id="__span-4-31"><a id="__codelineno-4-31" name="__codelineno-4-31" href="#__codelineno-4-31"></a># Data for the UK&#39;s GDP for the years 2019, 2020, and 2021
+</span><span id="__span-4-32"><a id="__codelineno-4-32" name="__codelineno-4-32" href="#__codelineno-4-32"></a>years = [2019, 2020, 2021]
+</span><span id="__span-4-33"><a id="__codelineno-4-33" name="__codelineno-4-33" href="#__codelineno-4-33"></a>gdp_values = [2851.41, 2697.81, 3141.51]
+</span><span id="__span-4-34"><a id="__codelineno-4-34" name="__codelineno-4-34" href="#__codelineno-4-34"></a>
+</span><span id="__span-4-35"><a id="__codelineno-4-35" name="__codelineno-4-35" href="#__codelineno-4-35"></a># Creating the line graph
+</span><span id="__span-4-36"><a id="__codelineno-4-36" name="__codelineno-4-36" href="#__codelineno-4-36"></a>plt.figure(figsize=(10, 5))
+</span><span id="__span-4-37"><a id="__codelineno-4-37" name="__codelineno-4-37" href="#__codelineno-4-37"></a>plt.plot(years, gdp_values, marker=&#39;o&#39;)
+</span><span id="__span-4-38"><a id="__codelineno-4-38" name="__codelineno-4-38" href="#__codelineno-4-38"></a>plt.title(&#39;UK GDP from 2019 to 2021&#39;)
+</span><span id="__span-4-39"><a id="__codelineno-4-39" name="__codelineno-4-39" href="#__codelineno-4-39"></a>plt.xlabel(&#39;Year&#39;)
+</span><span id="__span-4-40"><a id="__codelineno-4-40" name="__codelineno-4-40" href="#__codelineno-4-40"></a>plt.ylabel(&#39;GDP in Billion USD&#39;)
+</span><span id="__span-4-41"><a id="__codelineno-4-41" name="__codelineno-4-41" href="#__codelineno-4-41"></a>plt.grid(True)
+</span><span id="__span-4-42"><a id="__codelineno-4-42" name="__codelineno-4-42" href="#__codelineno-4-42"></a>plt.xticks(years)
+</span><span id="__span-4-43"><a id="__codelineno-4-43" name="__codelineno-4-43" href="#__codelineno-4-43"></a>plt.show()
+</span></code></pre></div>
+Stdout: ModuleNotFoundError("No module named 'matplotlib'")</p>
+<hr />
+<div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>## Questioning
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>In addition to specifying the execution process (fixed or dynamic), you can also enable invokables to directly ask one another questions via the `enable_questioning` keyword argument. When set to `True`, invokables can ask clarifying questions to any invokable that has acted before them (or any invokable that has a route leading to them, in the case of a `DynamicExecutionProcess`).
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>!!! note
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>    Allowing questions is almost certainly possible via the router through some clever prompt engineering. However, `enable_questioning` is an easier way to support this behavior!
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>Here&#39;s an example where the field is enabled:
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>
+</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>```python
+</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>...
+</span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>workflow = Beehive(
+</span><span id="__span-5-13"><a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>    name=&quot;CalculationBeehive&quot;,
+</span><span id="__span-5-14"><a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>    model=OpenAIModel(
+</span><span id="__span-5-15"><a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a>        model=&quot;gpt-3.5-turbo-0125&quot;,
+</span><span id="__span-5-16"><a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a>        api_key=&quot;&lt;your_api_key&gt;&quot;,
+</span><span id="__span-5-17"><a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a>    ),
+</span><span id="__span-5-18"><a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a>    execution_process=DynamicExecution(
+</span><span id="__span-5-19"><a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a>        edges=[
+</span><span id="__span-5-20"><a id="__codelineno-5-20" name="__codelineno-5-20" href="#__codelineno-5-20"></a>            researcher &gt;&gt; chart_generator,
+</span><span id="__span-5-21"><a id="__codelineno-5-21" name="__codelineno-5-21" href="#__codelineno-5-21"></a>            chart_generator &gt;&gt; chart_generator_qc,
+</span><span id="__span-5-22"><a id="__codelineno-5-22" name="__codelineno-5-22" href="#__codelineno-5-22"></a>            chart_generator_qc &gt;&gt; researcher,
+</span><span id="__span-5-23"><a id="__codelineno-5-23" name="__codelineno-5-23" href="#__codelineno-5-23"></a>        ],
+</span><span id="__span-5-24"><a id="__codelineno-5-24" name="__codelineno-5-24" href="#__codelineno-5-24"></a>        entrypoint=researcher,
+</span><span id="__span-5-25"><a id="__codelineno-5-25" name="__codelineno-5-25" href="#__codelineno-5-25"></a>        llm_router_additional_instructions={
+</span><span id="__span-5-26"><a id="__codelineno-5-26" name="__codelineno-5-26" href="#__codelineno-5-26"></a>            chart_generator_qc: [
+</span><span id="__span-5-27"><a id="__codelineno-5-27" name="__codelineno-5-27" href="#__codelineno-5-27"></a>                &quot;If you notice a `ModuleNotFoundError` in the code, then finish.
+</span><span id="__span-5-28"><a id="__codelineno-5-28" name="__codelineno-5-28" href="#__codelineno-5-28"></a>            ]
+</span><span id="__span-5-29"><a id="__codelineno-5-29" name="__codelineno-5-29" href="#__codelineno-5-29"></a>        },
+</span><span id="__span-5-30"><a id="__codelineno-5-30" name="__codelineno-5-30" href="#__codelineno-5-30"></a>    ),
+</span><span id="__span-5-31"><a id="__codelineno-5-31" name="__codelineno-5-31" href="#__codelineno-5-31"></a>    enable_questioning=True,
+</span><span id="__span-5-32"><a id="__codelineno-5-32" name="__codelineno-5-32" href="#__codelineno-5-32"></a>)
 </span></code></pre></div>
 <p>When the <code>ChartGenerator</code> acts after the <code>Researcher</code> agent, it can ask the <code>Researcher</code> agent clarifying questions about its output.</p>
 <div class="admonition note">
@@ -905,7 +1036,7 @@
 <p>Here's what that would look like:</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kn">from</span> <span class="nn">beehive.invokable.agent</span> <span class="kn">import</span> <span class="n">BeehiveAgent</span>
 </span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="kn">from</span> <span class="nn">beehive.invokable.beehive</span> <span class="kn">import</span> <span class="n">Beehive</span><span class="p">,</span> <span class="n">DynamicExecution</span>
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="kn">from</span> <span class="nn">beehive.models.openai</span> <span class="kn">import</span> <span class="n">OpenAIModel</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="kn">from</span> <span class="nn">beehive.models.openai_model</span> <span class="kn">import</span> <span class="n">OpenAIModel</span>
 </span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>
 </span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="n">researcher</span> <span class="o">=</span> <span class="n">BeehiveAgent</span><span class="p">(</span>
 </span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Researcher&quot;</span><span class="p">,</span>

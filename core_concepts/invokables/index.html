@@ -333,6 +333,8 @@
       
         
       
+        
+      
     
     
     
@@ -599,6 +601,27 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../prompts/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Prompts
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -622,10 +645,14 @@
 
 
 <h1 id="invokables">Invokables<a class="headerlink" href="#invokables" title="Permanent link">&para;</a></h1>
-<p><code>Invokables</code> are a core construct in Beehive. An <code>Invokable</code> is anything that uses an LLM in its internal architecture to reason through and execute a user's task.</p>
-<h2 id="base-attributes">Base Attributes<a class="headerlink" href="#base-attributes" title="Permanent link">&para;</a></h2>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
+<p>You will <strong>never</strong> need to instantiate this class directly. You should always use one of the child classes.</p>
+</div>
+<p><code>Invokables</code> are a core construct in Beehive. An <code>Invokable</code> is anything that uses an LLM in its internal architecture to reason through and execute a user's task.</p>
+<h2 id="base-attributes">Base Attributes<a class="headerlink" href="#base-attributes" title="Permanent link">&para;</a></h2>
+<div class="admonition info">
+<p class="admonition-title">Info</p>
 <p>Note that the <code>Invokable</code> class is a Pydantic <code>BaseModel</code>.</p>
 </div>
 <table>
@@ -690,10 +717,6 @@
 </tr>
 </tbody>
 </table>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>You will <strong>never</strong> need to instantiate this class directly. You should always use one of the child classes.</p>
-</div>
 <h2 id="invoke-method">"invoke"  method<a class="headerlink" href="#invoke-method" title="Permanent link">&para;</a></h2>
 <p>In order to have your invokable execute a task, you can use the <code>invoke</code> method. You'll see several examples of this throughout the documentation.</p>
 <table>
@@ -772,7 +795,7 @@
 <p>Note that <code>tools</code> is simply a list of functions. These functions should have docstrings and type-hints. Beehive will throw an error if either of these are missing.</p>
 </div>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span> <span class="nn">beehive.invokable.agent</span> <span class="kn">import</span> <span class="n">BeehiveAgent</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">from</span> <span class="nn">beehive.models.openai</span> <span class="kn">import</span> <span class="n">OpenAIModel</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">from</span> <span class="nn">beehive.models.openai_model</span> <span class="kn">import</span> <span class="n">OpenAIModel</span>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
 </span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="n">math_agent</span> <span class="o">=</span> <span class="n">BeehiveAgent</span><span class="p">(</span>
 </span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;MathAgent&quot;</span><span class="p">,</span>
@@ -888,7 +911,7 @@
 </table>
 <p>This was inspired by the work of <a href="https://arxiv.org/pdf/2402.05120">Li et. al</a>.</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span> <span class="nn">beehive.invokable.ensemble</span> <span class="kn">import</span> <span class="n">BeehiveEnsemble</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="kn">from</span> <span class="nn">beehive.models.openai</span> <span class="kn">import</span> <span class="n">OpenAIModel</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="kn">from</span> <span class="nn">beehive.models.openai_model</span> <span class="kn">import</span> <span class="n">OpenAIModel</span>
 </span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
 </span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="c1"># Using similarity scores</span>
 </span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="n">ensemble_similarity</span> <span class="o">=</span> <span class="n">BeehiveEnsemble</span><span class="p">(</span>
@@ -965,7 +988,7 @@
 </table>
 <p>This was inspired by the work of <a href="https://arxiv.org/pdf/2305.14325">Du et. al</a>.</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">from</span> <span class="nn">beehive.invokable.debate</span> <span class="kn">import</span> <span class="n">BeehiveDebateTeam</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="kn">from</span> <span class="nn">beehive.models.openai</span> <span class="kn">import</span> <span class="n">OpenAIModel</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="kn">from</span> <span class="nn">beehive.models.openai_model</span> <span class="kn">import</span> <span class="n">OpenAIModel</span>
 </span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
 </span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="n">debaters</span> <span class="o">=</span> <span class="n">BeehiveDebateTeam</span><span class="p">(</span>
 </span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;TestDebateTeam&quot;</span><span class="p">,</span>

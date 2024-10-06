@@ -333,6 +333,8 @@
       
         
       
+        
+      
     
     
     
@@ -497,6 +499,27 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../prompts/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Prompts
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -529,8 +552,8 @@
 <p>Docstrings are used to grab the tool description as well as the description for each of arguments.</p>
 <p>Beehive currently requires that docstring follow the sphinx or google standards. You can find the specifications here:</p>
 <ul>
-<li>Sphinx: https://sphinx-rtd-tutorial.readthedocs.io/en/latest/docstrings.html</li>
-<li>Google: https://google.github.io/styleguide/pyguide.html#383-functions-and-methods</li>
+<li>Sphinx: <a href="https://sphinx-rtd-tutorial.readthedocs.io/en/latest/docstrings.html">https://sphinx-rtd-tutorial.readthedocs.io/en/latest/docstrings.html</a></li>
+<li>Google: <a href="https://google.github.io/styleguide/pyguide.html#383-functions-and-methods">https://google.github.io/styleguide/pyguide.html#383-functions-and-methods</a></li>
 </ul>
 <p>Under the hood, Beehive parses the docstring and type hint and constructs a Pydantic <code>BaseModel</code> representing the function. The serialized <code>BaseModel</code> is then passed to the <code>BHChatModel</code> powering the <code>Invokable</code>, which then expresses the intent to call a specific tool in their response. Beehive handles interpreting this intent and actually calling the function.</p>
 <p>Here are some examples of tools with different docstrings.</p>
