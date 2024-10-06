@@ -1,10 +1,13 @@
 # Invokables
 
+!!! note
+    You will **never** need to instantiate this class directly. You should always use one of the child classes.
+
 `Invokables` are a core construct in Beehive. An `Invokable` is anything that uses an LLM in its internal architecture to reason through and execute a user's task.
 
 ## Base Attributes
 
-!!! note
+!!! info
     Note that the `Invokable` class is a Pydantic `BaseModel`.
 
 | Attribute<br>`type` | Description |
@@ -23,9 +26,6 @@
 | n_feedback_results<br>`int` | Amount of feedback to incorporate into answering the current task. This takes `n` tasks with the most similar embedding to the current one and incorporates their feedback into the Invokable's model. Default is `1`. |
 | color<br>`str` | Color used to represent the invokable in verbose printing. This can be a HEX code, an RGB code, or a standard color supported by the Rich API. See https://rich.readthedocs.io/en/stable/appendix/colors.html for more details. Default is `chartreuse2`. |
 
-
-!!! warning
-    You will **never** need to instantiate this class directly. You should always use one of the child classes.
 
 ## "invoke"  method
 In order to have your invokable execute a task, you can use the `invoke` method. You'll see several examples of this throughout the documentation.
