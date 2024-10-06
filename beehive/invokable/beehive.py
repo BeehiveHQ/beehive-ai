@@ -818,7 +818,6 @@ class Beehive(Invokable):
 
                     # The question could either be posed to both nodes inside the
                     # Beehive or agents outside the Beehive.
-                    # TODO
                     if question_obj.invokable in list(self._nodes.keys()):
                         current_node = self._nodes[question_obj.invokable]
                     else:
