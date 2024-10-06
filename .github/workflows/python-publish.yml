@@ -38,8 +38,18 @@ jobs:
         tag_name: ${{ github.ref }}
         release_name: Release ${{ github.ref }}
         body: |
-          Changes in this Release
-          - First Change
-          - Second Change
+          # ${{ github.ref }}
+
+          ## ⚠️ Deprecations
+
+          ## 🚀 Performance improvements
+
+          ## ✨ Enhancements
+
+          ## 🐞 Bug fixes
+
+          ## 📖 Documentation
+
+          ## 🛠️ Other improvements
         draft: true
         prerelease: false
