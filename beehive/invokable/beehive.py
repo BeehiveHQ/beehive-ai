@@ -448,22 +448,17 @@ class Beehive(Invokable):
         self,
         invokable: Invokable,
     ) -> None:
-        if isinstance(invokable, Beehive):
-            # TODO
-            pass
-
-        else:
-            last_elt_of_state = invokable.state.pop()
-            if not isinstance(last_elt_of_state, BHMessage):
-                raise ValueError(
-                    f"Expected last element of state to have type `BHMessage`, instead found `{last_elt_of_state.__class__.__name__}"
-                )
-
-            # Change the role
-            new_message = BHMessage(
-                role=MessageRole.QUESTION, content=last_elt_of_state.content
+        last_elt_of_state = invokable.state.pop()
+        if not isinstance(last_elt_of_state, BHMessage):
+            raise ValueError(
+                f"Expected last element of state to have type `BHMessage`, instead found `{last_elt_of_state.__class__.__name__}"
             )
-            invokable.state.append(new_message)
+
+        # Change the role
+        new_message = BHMessage(
+            role=MessageRole.QUESTION, content=last_elt_of_state.content
+        )
+        invokable.state.append(new_message)
 
     def invoke_router(
         self,
