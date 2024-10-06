@@ -820,12 +820,36 @@ class Beehive(Invokable):
                     # iteration of the loop.
                     child_invokable_task = question_obj.question
                     previous_node = current_node
-                    current_node = self._nodes[question_obj.invokable]
+
+                    # The question could either be posed to both nodes inside the
+                    # Beehive or agents outside the Beehive.
+                    # TODO
+                    if question_obj.invokable in list(self._nodes.keys()):
+                        current_node = self._nodes[question_obj.invokable]
+                    else:
+                        # If the invokable exists outside of the Beehive, then we need
+                        # to create a temporary node for it. This node should have one
+                        # edge that enables communication between this external node and
+                        # the agent that's actually asking the question.
+                        next_inv = [
+                            invoked
+                            for invoked in self._invokation_context
+                            if invoked.name == question_obj.invokable
+                        ][0]
+                        current_node = WorkerNode(
+                            invokable=next_inv,
+                            edges=[(next_inv >> previous_node.invokable)],
+                        )
 
                     # Set flags. These help us direct the conversation appropriately.
                     flag_question_being_asked = True
 
                     continue
+
+            except IndexError:
+                raise ValueError(
+                    "Trying to ask a question to an invokable that has not acted!"
+                )
 
             # No question is being asked...continue
             except Exception:
@@ -883,19 +907,24 @@ class Beehive(Invokable):
                     # If we're not finished, then invoke the next agent
                     if next_agent_name != "FINISH":
                         try:
-                            previous_node = current_node
-                            current_node = self._nodes[next_agent_name]
+                            previous_node, current_node = (
+                                current_node,
+                                self._nodes[next_agent_name],
+                            )
 
                             if self.enable_questioning:
                                 # Enable dynamic questioning — only enable the invokable
-                                # to ask questions to other invokables that:
-                                #   1. Have already acted, and
-                                #   2. Are able to speak with the invokable (via
-                                #      `edges`)
+                                # to ask questions to other invokables that have already
+                                # acted
                                 valid_invokables_to_question: list[Invokable] = []
-                                for inv in current_node._prev:
-                                    if inv in self._invokation_context:
+                                for inv in self._invokation_context:
+                                    if (
+                                        inv.model_dump()
+                                        != current_node.invokable.model_dump()
+                                        and inv not in valid_invokables_to_question
+                                    ):
                                         valid_invokables_to_question.append(inv)
+
                                 question_prompt = self.generate_pose_a_question_prompt(
                                     current_node.invokable, valid_invokables_to_question
                                 )
@@ -1046,12 +1075,24 @@ class Beehive(Invokable):
                     # iteration of the loop.
                     child_invokable_task = question_obj.question
                     prev_inv = curr_inv
-                    curr_inv = self._invokable_map[question_obj.invokable]
+
+                    # Our question prompts only allows questions to be asked to
+                    # invokables that have already acted.
+                    curr_inv = [
+                        invoked
+                        for invoked in self._invokation_context
+                        if invoked.name == question_obj.invokable
+                    ][0]
 
                     # Set flags. These help us direct the conversation appropriately.
                     # Then, proceed to the next iteration of the loop.
                     flag_question_being_asked = True
                     continue
+
+            except IndexError:
+                raise ValueError(
+                    "Trying to ask a question to an invokable that has not acted!"
+                )
 
             # No question is being asked...continue
             except Exception:
@@ -1104,17 +1145,15 @@ class Beehive(Invokable):
                 # with the question prompt.
                 if self.enable_questioning:
                     # Enable dynamic questioning — only enable the invokable to ask
-                    # questions to other invokables that:
-                    #   1. Have already acted, and
-                    #   2. Are able to speak with the invokable (via `edges`)
+                    # questions to other invokables that have already acted
                     valid_invokables_to_question: list[Invokable] = []
-                    for inv in self.execution_process.route._invokable_order[:i]:
+                    for inv in self._invokation_context:
                         if (
-                            inv in self._invokation_context
-                            and inv.name != curr_inv.name
-                            and inv.backstory != curr_inv.backstory
+                            inv.model_dump() != curr_inv.model_dump()
+                            and inv not in valid_invokables_to_question
                         ):
                             valid_invokables_to_question.append(inv)
+
                     question_prompt = self.generate_pose_a_question_prompt(
                         curr_inv, valid_invokables_to_question
                     )

@@ -1412,7 +1412,7 @@ def test_beehive_with_questions_between_agents(
             )
 
 
-def test_beehive_with_questions_between_agents_and_beehives(
+def test_agent_asking_beehive_question(
     test_storage, test_feedback_storage, test_printer
 ):
     expected_msg_contents = [
@@ -1509,7 +1509,7 @@ def test_beehive_with_questions_between_agents_and_beehives(
             # We tested questioning in a DynamicExecution earlier. Test FixedExecution
             # here.
             outer_bh = Beehive(
-                name="InnerBeehive",
+                name="OuterBeehive",
                 backstory="You are the inner Beehive.",
                 model=OpenAIModel(model="gpt-3.5-turbo"),
                 execution_process=FixedExecution(route=(inner_bh >> agent0)),
@@ -1668,6 +1668,254 @@ def test_beehive_with_questions_between_agents_and_beehives(
             assert agent0.state[5] == agent0.state[2]
 
             assert agent0.state[6] == BHMessage(
+                role=MessageRole.ASSISTANT,
+                content="After receiving clarification, hello from our mocked class!",
+            )
+
+
+def test_beehive_asking_agent_question(
+    test_storage, test_feedback_storage, test_printer
+):
+    expected_msg_contents = [
+        "Hello from our mocked class!",
+        "Hello from our mocked class!",
+        '{"question": "Can you clarify something for me?", "invokable": "TestAgent0", "reason": "I need this clarification please"}',
+        "Hello from our mocked class (clarified)!",
+        "After receiving clarification, hello from our mocked class!",
+    ]
+    with mock.patch("beehive.models.openai_model.OpenAIModel._client") as mocked_model:
+        chat_messages = [MockChatCompletion([x]) for x in expected_msg_contents]
+        mocked_model.chat.completions.create = mock.Mock(side_effect=chat_messages)
+
+        agent0 = BeehiveAgent(
+            name="TestAgent0",
+            backstory="You are a helpful AI assistant.",
+            model=OpenAIModel(model="gpt-3.5-turbo"),
+        )
+        agent1 = BeehiveAgent(
+            name="TestAgent1",
+            backstory="You are a helpful AI assistant.",
+            model=OpenAIModel(model="gpt-3.5-turbo"),
+        )
+        agent2 = BeehiveAgent(
+            name="TestAgent2",
+            backstory="You are a helpful AI assistant.",
+            model=OpenAIModel(model="gpt-3.5-turbo"),
+        )
+        with mock.patch(
+            "beehive.invokable.beehive.Beehive._create_router"
+        ) as mocked_router:
+            mocked_router_instances = [
+                mock.Mock(name="RouterInner"),
+                mock.Mock(name="RouterOuter"),
+            ]
+
+            # Next tasks for inner router (the nested Beehive will use a pre-defined
+            # route).
+            inner_router_next_tasks = [
+                [
+                    BHMessage(
+                        role=MessageRole.ASSISTANT,
+                        content='{"task": "This is agent 1\'s first task in the inner beehive."}',
+                    ),
+                ],
+                [
+                    BHMessage(
+                        role=MessageRole.ASSISTANT,
+                        content='{"task": "This is agent 2\'s first task in the inner beehive."}',
+                    ),
+                ],
+            ]
+            mocked_router_instances[0]._invoke.side_effect = inner_router_next_tasks
+
+            # Next agents for outer router
+            outer_router_next_agents = [
+                [
+                    BHMessage(
+                        role=MessageRole.ASSISTANT,
+                        content='{"agent": "TestAgent0", "reason": "TestAgent0 can accomplish this task.", "task": "This is the TestAgent0\'s task."}',
+                    ),
+                ],
+                [
+                    BHMessage(
+                        role=MessageRole.ASSISTANT,
+                        content='{"task": "This is the inner Beehive\'s task."}',
+                    )
+                ],
+                [
+                    BHMessage(
+                        role=MessageRole.ASSISTANT,
+                        content='{"agent": "FINISH", "reason": "We are done with this task.", "task": ""}',
+                    ),
+                ],
+            ]
+            mocked_router_instances[1]._invoke.side_effect = outer_router_next_agents
+
+            mocked_router.side_effect = mocked_router_instances
+
+            inner_bh = Beehive(
+                name="InnerBeehive",
+                backstory="You are the inner Beehive.",
+                model=OpenAIModel(model="gpt-3.5-turbo"),
+                execution_process=FixedExecution(route=(agent1 >> agent2)),
+                enable_questioning=True,
+            )
+            inner_bh._db_storage = test_storage
+
+            # We tested questioning in a DynamicExecution earlier. Test FixedExecution
+            # here.
+            outer_bh = Beehive(
+                name="OuterBeehive",
+                backstory="You are the inner Beehive.",
+                model=OpenAIModel(model="gpt-3.5-turbo"),
+                execution_process=FixedExecution(route=(agent0 >> inner_bh)),
+                enable_questioning=True,
+            )
+            outer_bh._db_storage = test_storage
+            output = outer_bh.invoke("test task", stdout_printer=test_printer)
+
+            # We expect there to be 5 output messages: first message from agent 0, first
+            # message from agent 1, clarification question from agent 2, response by
+            # agent 0, and final response by agent 2.
+            output_elts = output["messages"]
+            assert len(output_elts) == 5
+
+            # # First element
+            first_elt = output_elts[0]
+            assert isinstance(first_elt, BHStateElt)
+            assert first_elt.invokable == agent0
+            assert first_elt.task == "This is the TestAgent0's task."
+            assert len(first_elt.completion_messages) == 1
+            assert isinstance(first_elt.completion_messages[0], BHMessage)
+            assert first_elt.completion_messages[0].content == expected_msg_contents[0]
+
+            second_elt = output_elts[1]
+            assert isinstance(second_elt, BHStateElt)
+            assert second_elt.invokable == agent1
+            assert (
+                second_elt.task == "This is agent 1's first task in the inner beehive."
+            )
+            assert len(second_elt.completion_messages) == 1
+            assert isinstance(second_elt.completion_messages[0], BHMessage)
+            assert second_elt.completion_messages[0].content == expected_msg_contents[1]
+
+            third_elt = output_elts[2]
+            assert isinstance(third_elt, BHStateElt)
+            assert third_elt.invokable == agent2
+            assert (
+                "This is agent 2's first task in the inner beehive." in third_elt.task
+            )
+            assert (
+                "IF YOU WANT TO ASK A QUESTION, format the output as a JSON instance that conforms to the JSON schema below."
+                in third_elt.task
+            )
+            assert len(third_elt.completion_messages) == 1
+            assert isinstance(third_elt.completion_messages[0], BHMessage)
+            assert third_elt.completion_messages[0].content == expected_msg_contents[2]
+
+            fourth_elt = output_elts[3]
+            assert isinstance(fourth_elt, BHStateElt)
+            assert fourth_elt.invokable == agent0
+            assert fourth_elt.task == "Can you clarify something for me?"
+            assert len(fourth_elt.completion_messages) == 1
+            assert isinstance(fourth_elt.completion_messages[0], BHMessage)
+            assert fourth_elt.completion_messages[0].content == expected_msg_contents[3]
+
+            fifth_elt = output_elts[4]
+            assert isinstance(fifth_elt, BHStateElt)
+            assert fifth_elt.invokable == agent2
+            assert fifth_elt.task == third_elt.task
+            assert len(fifth_elt.completion_messages) == 1
+            assert isinstance(fifth_elt.completion_messages[0], BHMessage)
+            assert fifth_elt.completion_messages[0].content == expected_msg_contents[4]
+
+            # Agent 0's state. This will include
+            #   System message
+            #   User query
+            #   First response
+            #   Context message with context from agent 1
+            #   Clarifying question from InnerBeehive
+            #   Response to clarifying question
+            assert len(agent0.state) == 6
+            assert agent0.state[0] == BHMessage(
+                role=MessageRole.SYSTEM, content="You are a helpful AI assistant."
+            )
+            assert agent0.state[1] == BHMessage(
+                role=MessageRole.USER, content="This is the TestAgent0's task."
+            )
+            assert agent0.state[2] == BHMessage(
+                role=MessageRole.ASSISTANT, content="Hello from our mocked class!"
+            )
+            assert isinstance(agent0.state[3], BHMessage)
+            assert agent0.state[3].role == MessageRole.CONTEXT
+            assert (
+                '- {"agent_backstory": "You are a helpful AI assistant.", "agent_messages": ["Hello from our mocked class!"], "agent_name": "TestAgent1"}'
+                in agent0.state[3].content
+            )
+            assert agent0.state[4] == BHMessage(
+                role=MessageRole.USER, content="Can you clarify something for me?"
+            )
+            assert agent0.state[5] == BHMessage(
+                role=MessageRole.ASSISTANT,
+                content="Hello from our mocked class (clarified)!",
+            )
+
+            # Agent states. Agent 1's state should be pretty simple — it should just
+            # contain the system message, context message, the task, and the response.
+            assert len(agent1.state) == 4
+            assert agent1.state[0] == BHMessage(
+                role=MessageRole.SYSTEM, content="You are a helpful AI assistant."
+            )
+            assert isinstance(agent1.state[1], BHMessage)
+            assert agent1.state[1].role == MessageRole.CONTEXT
+            assert agent1.state[2] == BHMessage(
+                role=MessageRole.USER,
+                content="This is agent 1's first task in the inner beehive.",
+            )
+            assert agent1.state[3] == BHMessage(
+                role=MessageRole.ASSISTANT, content="Hello from our mocked class!"
+            )
+
+            # Agent 2's state. This will include:
+            #   System message
+            #   Context message from agent 0 & 1
+            #   User query
+            #   Clarifying question to agent 0
+            #   Context message with clarification
+            #   User query
+            #   Response
+            assert len(agent2.state) == 7
+            assert agent2.state[0] == BHMessage(
+                role=MessageRole.SYSTEM, content="You are a helpful AI assistant."
+            )
+            assert isinstance(agent2.state[1], BHMessage)
+            assert agent2.state[1].role == MessageRole.CONTEXT
+            assert (
+                '{"agent_backstory": "You are a helpful AI assistant.", "agent_messages": ["Hello from our mocked class!"], "agent_name": "TestAgent0"}'
+                in agent2.state[1].content
+            )
+            assert (
+                '{"agent_backstory": "You are a helpful AI assistant.", "agent_messages": ["Hello from our mocked class!"], "agent_name": "TestAgent1"}'
+                in agent2.state[1].content
+            )
+            assert isinstance(agent2.state[2], BHMessage)
+            assert agent2.state[2].role == MessageRole.USER
+            assert (
+                "This is agent 2's first task in the inner beehive."
+                in agent2.state[2].content
+            )
+            assert agent2.state[3] == BHMessage(
+                role=MessageRole.QUESTION,
+                content='{"question": "Can you clarify something for me?", "invokable": "TestAgent0", "reason": "I need this clarification please"}',
+            )
+            assert isinstance(agent2.state[4], BHMessage)
+            assert agent2.state[4].role == MessageRole.CONTEXT
+            assert (
+                '{"agent_backstory": "You are a helpful AI assistant.", "agent_messages": ["Hello from our mocked class (clarified)!"], "agent_name": "TestAgent0"}'
+                in agent2.state[4].content
+            )
+            assert agent2.state[5] == agent2.state[2]
+            assert agent2.state[6] == BHMessage(
                 role=MessageRole.ASSISTANT,
                 content="After receiving clarification, hello from our mocked class!",
             )
