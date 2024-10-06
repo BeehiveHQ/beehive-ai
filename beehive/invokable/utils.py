@@ -1,5 +1,6 @@
 """Util functions for invokables.
 """
+import re
 from typing import Any, Callable, Tuple
 
 from beehive.invokable.types import AnyMessageSequence
@@ -25,3 +26,10 @@ def _construct_bh_tools_map(
 
 def _convert_messages_to_string(messages: AnyMessageSequence, delim: str = " ") -> str:
     return delim.join(filter(None, [str(m.content) for m in messages]))
+
+
+def _process_json_output(content: str) -> str:
+    # Sometimes, the router wraps the JSON return in ```json...```. Remove these.
+    content = re.sub(r"\n", "", content)
+    content = re.sub(r"^(\`{3}json)(.*)(\`{3})$", r"\2", content)
+    return content

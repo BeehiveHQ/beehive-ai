@@ -126,12 +126,6 @@ class BeehiveAgent(Agent):
             except Exception as e:
                 total_count += 1
                 if pass_back_model_errors:
-                    print(
-                        (
-                            f"Encountered an issue with when prompting {self.name}: {str(e)}. Passing"
-                            " the error back to the LLM and trying again!"
-                        )
-                    )
                     additional_system_message = BHMessage(
                         role=MessageRole.SYSTEM,
                         content=ModelErrorPrompt(error=str(e)).render(),
@@ -180,7 +174,7 @@ class BeehiveAgent(Agent):
           - `printer` (`output.printer.Printer`)
 
         examples:
-        - See the documentation here: [TODO]
+        - See the documentation here: https://beehivehq.github.io/beehive-ai/
         """
         # Define the printer and create Panel for the invokable
         printer = stdout_printer if stdout_printer else Printer()

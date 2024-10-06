@@ -108,3 +108,4 @@ nav:
   - Tools: 'core_concepts/tools.md'
   - Memory: 'core_concepts/memory.md'
   - Feedback: 'core_concepts/feedback.md'
+  - Prompts: 'core_concepts/prompts.md'

@@ -1,12 +1,23 @@
+import shutil
 from pathlib import Path
 
 from jinja2 import Template
 from pydantic import BaseModel, ConfigDict
 
-PROMPT_DIR = Path(__file__).parent
+from beehive.constants import INTERNAL_FOLDER_PATH
+
+PROMPT_DIR = INTERNAL_FOLDER_PATH / "prompts"
+PROMPT_DIR.mkdir(exist_ok=True)
+
+
+def copy_prompt_to_internal_folder(fname: str) -> None:
+    if not (PROMPT_DIR / fname).is_file():
+        shutil.copy(Path(__file__).parent / fname, PROMPT_DIR / fname)
+    return None
 
 
 def load_template(template_path: Path) -> str:
+    copy_prompt_to_internal_folder(template_path.name)
     with open(template_path, "r") as f:
         template_string = f.read()
     return template_string

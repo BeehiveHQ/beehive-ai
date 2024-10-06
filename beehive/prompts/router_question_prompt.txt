@@ -13,3 +13,4 @@ the object {"foo": ["bar", "baz"]} is a well-formatted instance of the schema. T
 Here is the output schema:
 ```
 {"properties": {"invokable": {"default": "Invokable to answer question.", "title": "Invokable", "type": "string"}}}
+```

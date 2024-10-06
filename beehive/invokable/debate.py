@@ -356,7 +356,7 @@ class BeehiveDebateTeam(AgentTeam):
           - `printer` (`output.printer.Printer`)
 
         examples:
-        - See the documentation here: [TODO]
+        - See the documentation here: https://beehivehq.github.io/beehive-ai/
         """
         printer = stdout_printer if stdout_printer else Printer()
         if verbose:

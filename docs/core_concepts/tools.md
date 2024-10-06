@@ -11,8 +11,8 @@ Docstrings are used to grab the tool description as well as the description for 
 
 Beehive currently requires that docstring follow the sphinx or google standards. You can find the specifications here:
 
-- Sphinx: https://sphinx-rtd-tutorial.readthedocs.io/en/latest/docstrings.html
-- Google: https://google.github.io/styleguide/pyguide.html#383-functions-and-methods
+- Sphinx: [https://sphinx-rtd-tutorial.readthedocs.io/en/latest/docstrings.html](https://sphinx-rtd-tutorial.readthedocs.io/en/latest/docstrings.html)
+- Google: [https://google.github.io/styleguide/pyguide.html#383-functions-and-methods](https://google.github.io/styleguide/pyguide.html#383-functions-and-methods)
 
 Under the hood, Beehive parses the docstring and type hint and constructs a Pydantic `BaseModel` representing the function. The serialized `BaseModel` is then passed to the `BHChatModel` powering the `Invokable`, which then expresses the intent to call a specific tool in their response. Beehive handles interpreting this intent and actually calling the function.
 

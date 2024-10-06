@@ -40,7 +40,7 @@ class OpenAIModel(BHChatModel):
     - **`model_kwargs` (dict[str, Any]): keyword arguments passed to the `openai.OpenAI` client for model instantiation. These might include parameters such as `temperature`, `max_tokens`, etc.
 
     examples:
-    - check out the documentation here: TODO
+    - check out the documentation here: https://beehivehq.github.io/beehive-ai/
     """
 
     _client: OpenAI = PrivateAttr()
