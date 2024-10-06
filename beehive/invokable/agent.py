@@ -126,12 +126,6 @@ class BeehiveAgent(Agent):
             except Exception as e:
                 total_count += 1
                 if pass_back_model_errors:
-                    print(
-                        (
-                            f"Encountered an issue with when prompting {self.name}: {str(e)}. Passing"
-                            " the error back to the LLM and trying again!"
-                        )
-                    )
                     additional_system_message = BHMessage(
                         role=MessageRole.SYSTEM,
                         content=ModelErrorPrompt(error=str(e)).render(),

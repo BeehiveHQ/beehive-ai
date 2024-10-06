@@ -181,12 +181,6 @@ class BeehiveLangchainAgent(Agent, LangchainMixin):
                 )
             except Exception as e:
                 if pass_back_model_errors:
-                    printer.print_standard(
-                        (
-                            f"Encountered an issue with when prompting {self.name}. Passing"
-                            " the error back to the LLM and trying again!"
-                        )
-                    )
                     additional_system_message = SystemMessage(
                         content=ModelErrorPrompt(error=str(e)).render()
                     )
