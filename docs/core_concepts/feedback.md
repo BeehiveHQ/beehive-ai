@@ -2,7 +2,7 @@
 
 Feedback enables Beehive `Invokables` to preserve valuable insights and learnings from past executions, allowing agents to build and refine their knowledge over time.
 
-Feedback can be configured with the following invokable [attributes](/core_concepts/invokables/#base-attributes):
+Feedback can be configured with the following invokable [attributes](/beehive-ai/core_concepts/invokables/#base-attributes):
 
 | Attribute<br>`type` | Description |
 | ------------------- | ----------- |

@@ -15,7 +15,7 @@ In traditional software applications, the chain of actions taken by the applicat
 
 On the other hand, agents rely on a language model to decide which actions to take and in what order. Unlike traditional software applications, where the sequence of actions is predefined in the code, the language model itself is the decision-making engine.
 
-Beehive, in particular, is great for rapidly creating complex chat patterns between agents (or [invokables](/core_concepts/invokables/), in Beehive nomenclature). This includes:
+Beehive, in particular, is great for rapidly creating complex chat patterns between agents (or [invokables](/beehive-ai/core_concepts/invokables/), in Beehive nomenclature). This includes:
 
 - Sequential chats
 - Hierarchical chats
@@ -33,3 +33,5 @@ In addition, Beehive shares many features with other popular agentic frameworks:
 Here is an example of something you could create in Beehive with relatively little code:
 
 ![Example Beehive](images/example_beehive.png){ align=left }
+
+To learn how, head over to [Getting Started](/beehive-ai/getting_started) to install Beehive.

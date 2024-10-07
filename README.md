@@ -7,8 +7,7 @@
 
 Beehive is an open-source framework for building AI agents and enabling these agents to cooperate with one another to solve tasks. This project was heavily inspired by the awesome work at Langgraph, CrewAI, and PyAutogen.
 
-We're still in the early stages, so any and all feedback is welcome! If you notice a bug or want to suggest an improvement, please open a Github PR.
-
+**We're still in the early stages — expect breaking changes to the API.** Any and all feedback is welcome! If you notice a bug or want to suggest an improvement, please open a Github PR.
 
 ## Why use Beehive?
 
@@ -30,10 +29,6 @@ In addition, Beehive shares many features with other popular agentic frameworks:
 - Streaming support
 - Memory / feedback
 
-Here is an example of something you could create in Beehive with relatively little code:
-
-![Example Beehive](docs/images/example_beehive.png)
-
 
 ## Installation
 
@@ -44,6 +39,50 @@ pip install beehive-ai
 
 Note that the Python OpenAI client is included in the standard Beehive installation.
 
+## Creating your first Beehive
+
+Let's create the following Beehive:
+
+![LanguageGeneratorBeehive](/docs/images/language_generator_beehive.png)
+
+This simple Beehive instructs two agents to work together to create a new language:
+
+```python
+linguist_agent = BeehiveAgent(
+    name="Linguist",
+    backstory="You are an expert in linguistics. You work alongside another linguist to develop new languages."
+    model=OpenAIModel(
+        model="gpt-4-turbo",
+    ),
+)
+
+linguist_critic = BeehiveAgent(
+    name="LinguistCritic",
+    backstory="You are an expert in linguistics. Specifically, you are great at examining grammatical rules of new languages and suggesting improvements.",
+    model=OpenAIModel(
+        model="gpt-4-turbo",
+    ),
+)
+
+beehive = Beehive(
+    name="LanguageGeneratorBeehive",
+    backstory="You are an expert in creating new languages.",
+    model=OpenAIModel(
+        model="gpt-4-turbo",
+    ),
+    execution_process=FixedExecution(route=(linguist_agent >> linguist_critic)),
+    chat_loop=2,
+    enable_questioning=True,
+)
+beehive.invoke(
+    "Develop a new language using shapes and symbols. After you have developed a comprehensive set of grammar rules, provide some examples of sentences and their representation in the new language.",
+    pass_back_model_errors=True
+)
+```
+
+Note that this Beehive uses two `BeehiveAgents`, which are one of the more basic invokable constructions. You can scale up the complexity by creating Beehives within Beehives ("nesting") or using more complex invokables, e.g., `BeehiveEnsembles` or `BeehiveDebateTeams`.
+
+
 ## Documentation
 
-Check out the documentation [here](https://beehivehq.github.io/beehive-ai/).
+Please check out the documentation [here](https://beehivehq.github.io/beehive-ai/) to get started!
