@@ -248,7 +248,7 @@ output = workflow.invoke(
 ```
 
 !!! note
-    The `tavily_search_tool` used by the `Researcher` agent is simply a function. Its implementation can be found [here](/core_concepts/tools).
+    The `tavily_search_tool` used by the `Researcher` agent is simply a function. Its implementation can be found [here](/beehive-ai/core_concepts/tools).
 
 In this Beehive, we have three agents: a `Researcher` agent that browses the internet, a `ChartGenerator` agent that generates Python code, and a `ChartGeneratorCritic` agent that QAs Python code. Here's what happens under the hood:
 

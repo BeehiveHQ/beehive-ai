@@ -6,9 +6,9 @@ Beehive supports both short-term memory and long-term memory.
 
 Short-term memory allows `Invokables` to temporarily store recent interactions and outcomes using RAG, enabling agents to recall and utilize information relevant to their current context during the current executions.
 
-This memory is handled by the `state` [attribute](/core_concepts/invokables/#base-attributes) in Invokables. `state` is a list of messages (e.g., `BHMessage | BHToolMessage` or `BaseMessage` depending on the type of `Invokable`).
+This memory is handled by the `state` [attribute](/beehive-ai/core_concepts/invokables/#base-attributes) in Invokables. `state` is a list of messages (e.g., `BHMessage | BHToolMessage` or `BaseMessage` depending on the type of `Invokable`).
 
-Wnen an Invokable is instantiated, `state` is instantiated as an empty list. Whenever a user [invokes](/core_concepts/invokables/#invoke-method) the invokable, Beehive automatically stores the messages in the `state`. Then, when the user invoke the invokable again, this state is used as context.
+Wnen an Invokable is instantiated, `state` is instantiated as an empty list. Whenever a user [invokes](/beehive-ai/core_concepts/invokables/#invoke-method) the invokable, Beehive automatically stores the messages in the `state`. Then, when the user invoke the invokable again, this state is used as context.
 
 For example, for `Invokables` that use the `OpenAIModel`, the state is passed as the `messages` argument in the [chat completions API](https://platform.openai.com/docs/guides/chat-completions).
 
@@ -51,9 +51,9 @@ As you can see, the `state` agent is preserved for the life of the `joke_agent`.
 
 Whereas short-term memory only exists for the life of the `Invokable`, Long-term memory enables access invokations from previous days, weeks, and months.
 
-When you create and invoke your first `Invokable`, Beehive creates a memory store in your local filesystem at `~/.beehive`. This memory store contains two files: `beehive.db` and `feedback/`. The latter is used for [feedback](/core_concepts/feedback), which we'll cover in a bit.
+When you create and invoke your first `Invokable`, Beehive creates a memory store in your local filesystem at `~/.beehive`. This memory store contains two files: `beehive.db` and `feedback/`. The latter is used for [feedback](/beehive-ai/core_concepts/feedback), which we'll cover in a bit.
 
-Long-term memory is controlled by two [attributes](/core_concepts/invokables/#base-attributes): `history`, and `history_lookback`.
+Long-term memory is controlled by two [attributes](/beehive-ai/core_concepts/invokables/#base-attributes): `history`, and `history_lookback`.
 
 When `history=True`, Beehive augments the `Invokable` state with messages from `history_lookback` days before.
 
