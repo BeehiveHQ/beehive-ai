@@ -68,6 +68,17 @@ class DebateJudgePrompt(BHPrompt):
     responses: str
 
 
+COT_REFLECTION_PROMPT: str = load_template(PROMPT_DIR / "cot_reflection_prompt.txt")
+
+
+class COTReflectionPrompt(BHPrompt):
+    template: str = COT_REFLECTION_PROMPT
+    backstory: str
+    step_budget: str
+    tool_names: str
+    enable_step_budget_requests: bool
+
+
 EVALUATION_PROMPT: str = load_template(PROMPT_DIR / "evaluation_prompt.txt")
 
 
