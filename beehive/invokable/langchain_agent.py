@@ -254,6 +254,8 @@ class BeehiveLangchainAgent(Agent, LangchainMixin):
         # Define the printer and create Panel for the invokable
         printer = stdout_printer if stdout_printer else Printer()
         if verbose:
+            if not printer._all_beehives:
+                printer._console.print(printer.separation_rule())
             printer._console.print(
                 printer.invokable_label_text(
                     self.name,

@@ -9,7 +9,7 @@ class SphinxParser(SchemaParser):
         description="Pattern indicating the beginning of the argument section.",
     )
     arg_pattern: str = Field(
-        default="^:param\s([a-zA-Z0-9_]+):(.+)?$",  # type: ignore
+        default=r"^:param\s([a-zA-Z0-9_]+):(.+)?$",
         description=(
             "Pattern for argument name and description. This regex should have two"
             " capture groups — the first one should match the argument name, and the"
@@ -25,6 +25,6 @@ class SphinxParser(SchemaParser):
         description="Pattern indicating the end of the argument section.",
     )
     ignore_patterns: list[str] = Field(
-        default=["^:type\s([a-zA-Z0-9_]+):(.+)$"],  # type: ignore
+        default=[r"^:type\s([a-zA-Z0-9_]+):(.+)$"],
         description="List of patterns to ignore in the argument section.",
     )

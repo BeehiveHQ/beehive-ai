@@ -1,5 +1,6 @@
 import json
 import logging
+import traceback
 from typing import Literal
 
 from pydantic import BaseModel, Field, PrivateAttr, field_validator, model_validator
@@ -159,13 +160,17 @@ class BeehiveCOTReflectionAgent(Agent):
         step_count = 1
         total_count = 0
         all_messages: list[BHMessage | BHToolMessage] = []
+
+        # Keep track of the previous step action
+        current_action: str | None = None
+
         while True:
             if total_count > retry_limit:
                 break
             total_count += 1
 
             # If we have exceeded our step budget, break
-            if step_count > self.step_budget:
+            if step_count > self.step_budget and current_action != "request_more_steps":
                 break
 
             # Chat with model. Wrap this in a try-except block so that we can pass the
@@ -195,56 +200,83 @@ class BeehiveCOTReflectionAgent(Agent):
                     raise ValueError(
                         f"Unrecognized message class `{step_message.__class__.__name__}`."
                     )
-                step = StepOutput(
-                    **json.loads(_process_json_output(step_message.content))
-                )
-                if step.next_action == "final_answer":
-                    if step_count < self.minimum_step_count:
-                        printer.print_standard(
-                            "Final answer received before achieving the minimum step count. Manually setting the next step to 'continue'."
-                        )
-                        step.action = "continue"
-
-                        # Replace the the first message. We do this it via a new
-                        # variable for mypy.
-                        new_first_message: list[BHMessage | BHToolMessage] = [
-                            BHMessage(
-                                role=MessageRole.ASSISTANT,
-                                content=step.model_dump_json(),
+                if step_message.content != "":
+                    step = StepOutput(
+                        **json.loads(_process_json_output(step_message.content))
+                    )
+                    # Handle adding more steps
+                    if current_action == "final_answer":
+                        if step_count < self.minimum_step_count:
+                            printer.print_standard(
+                                "Final answer received before achieving the minimum step count. Manually setting the next step to 'continue'."
                             )
-                        ]
-                        iter_messages = new_first_message + iter_messages[1:]
+                            step.action = "continue"
+
+                            # Replace the the first message. We do this it via a new
+                            # variable for mypy.
+                            new_first_message: list[BHMessage | BHToolMessage] = [
+                                BHMessage(
+                                    role=MessageRole.ASSISTANT,
+                                    content=step.model_dump_json(),
+                                )
+                            ]
+                            iter_messages = new_first_message + iter_messages[1:]
+                        else:
+                            # Print the final answer and exit the loop
+                            if verbose:
+                                printer.print_standard(f"Final answer: {step.content}")
+                            break
+
+                    # Otherwise, if the LLM is requesting more steps, then add that to the
+                    # budget.
+                    elif current_action == "request_more_steps":
+                        self.step_budget += int(step.content)
+                        printer._console.print_json(step.model_dump_json())
+
+                    # Otherwise, print the intermediate step and continue
                     else:
-                        # Print the final answer and exit the loop
-                        if verbose:
-                            printer.print_standard(f"Final answer: {step.content}")
-                        break
+                        printer._console.print_json(step.model_dump_json())
 
-                # Otherwise, if the LLM is requesting more steps, then add that to the
-                # budget.
-                elif step.action == "request_more_steps":
-                    self.step_budget += int(step.content)
+                    self.state.extend(iter_messages)
+                    all_messages.extend(iter_messages)
 
-                # Otherwise, print the intermediate step and continue
-                else:
-                    printer._console.print_json(step.model_dump_json())
+                    # Increment the step count
+                    step_count = step.step_number
+                    current_action = step.next_action
 
-                self.state.extend(iter_messages)
-                all_messages.extend(iter_messages)
+                # Print content of any remaining messages, e.g., from tool calls.
+                if len(iter_messages) > 1:
+                    printer.print_invokable_output(iter_messages[1:])
 
-                # Increment the step count
-                step_count += 1
-            except Exception as e:
+            # If there is a JSON decoder error, then the agent likely returned two steps
+            # together.
+            except json.decoder.JSONDecodeError:
                 total_count += 1
                 if pass_back_model_errors:
                     additional_system_message = BHMessage(
                         role=MessageRole.SYSTEM,
-                        content=ModelErrorPrompt(error=str(e)).render(),
+                        content=ModelErrorPrompt(
+                            error=f"Encountered a JSONDecodeError with the following content: <content>{step_message.content}</content>. You likely responded with two steps grouped together. This is incorrect. **RESPOND WITH ONE STEP AT A TIME, INCLUDING REFLECTIONS.**"
+                        ).render(),
+                    )
+                    self.state.append(additional_system_message)
+                else:
+                    raise
+
+            # For all other exceptions, just use the traceback.
+            except Exception:
+                total_count += 1
+                if pass_back_model_errors:
+                    additional_system_message = BHMessage(
+                        role=MessageRole.SYSTEM,
+                        content=ModelErrorPrompt(
+                            error=str(traceback.format_exc())
+                        ).render(),
                     )
                     self.state.append(additional_system_message)
                 else:
                     print(
-                        f"Encountered an issue with when prompting {self.name}: {str(e)}"
+                        f"Encountered an issue with when prompting {self.name}: {str(traceback.format_exc())}"
                     )
                     raise
 
@@ -283,6 +315,8 @@ class BeehiveCOTReflectionAgent(Agent):
         # Define the printer and create Panel for the invokable
         printer = stdout_printer if stdout_printer else Printer()
         if verbose:
+            if not printer._all_beehives:
+                printer._console.print(printer.separation_rule())
             printer._console.print(
                 printer.invokable_label_text(
                     self.name,

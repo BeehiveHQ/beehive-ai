@@ -14,7 +14,7 @@ class GoogleParser(SchemaParser):
         description="Pattern indicating the beginning of the argument section.",
     )
     arg_pattern: str = Field(
-        default="^([A-Za-z0-9\_]+)\:(.*)$",  # type: ignore
+        default=r"^([A-Za-z0-9\_]+)\:(.*)$",
         description=(
             "Pattern for argument name and description. This regex should have two"
             " capture groups — the first one should match the argument name, and the"
