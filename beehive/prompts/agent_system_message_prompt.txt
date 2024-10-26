@@ -1,0 +1,6 @@
+{{backstory}}. {% if response_model_schema is not none %}Format all of your answers according to the following schema:
+
+<schema>
+{{response_model_schema}}
+</schema>
+{% endif %}

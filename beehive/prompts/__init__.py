@@ -42,6 +42,17 @@ class BHPrompt(BaseModel):
         return prompt_generator(self.template, **self.model_dump(exclude={"template"}))
 
 
+AGENT_SYSTEM_MESSAGE_PROMPT: str = load_template(
+    PROMPT_DIR / "agent_system_message_prompt.txt"
+)
+
+
+class AgentSystemMessagePrompt(BHPrompt):
+    template: str = AGENT_SYSTEM_MESSAGE_PROMPT
+    backstory: str
+    response_model_schema: str | None
+
+
 CONTEXT_PROMPT_FULL: str = load_template(PROMPT_DIR / "context_prompt_full.txt")
 
 

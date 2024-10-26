@@ -6,6 +6,7 @@ from typing import Literal
 
 from jinja2 import Environment, meta
 from pydantic import BaseModel, Field, PrivateAttr, field_validator, model_validator
+from pydantic_core import ValidationError
 
 from beehive.invokable.base import Agent, Invokable
 from beehive.invokable.executor import InvokableExecutor
@@ -14,11 +15,11 @@ from beehive.invokable.utils import _construct_bh_tools_map, _process_json_outpu
 from beehive.message import BHMessage, BHToolMessage, MessageRole
 from beehive.models.base import BHChatModel
 from beehive.prompts import (
+    REASONING_PROMPT,
     BHPrompt,
     ConciseContextPrompt,
     FullContextPrompt,
     ModelErrorPrompt,
-    ReasoningPrompt,
 )
 from beehive.tools.base import BHTool
 from beehive.utilities.printer import Printer
@@ -26,8 +27,8 @@ from beehive.utilities.printer import Printer
 logger = logging.getLogger(__file__)
 
 
-class ReasoningAgent(Agent):
-    """ReasoningAgents are invokables that execute complex tasks by combining
+class BeehiveReasoningAgent(Agent):
+    """BeehiveReasoningAgents are invokables that execute complex tasks by combining
     memory and tool usage. Internally, ReasoningAgents use several iterations to
     examine the question, plan their response, reflect on their previous messages, and
     produce a final answer.
@@ -65,7 +66,7 @@ class ReasoningAgent(Agent):
             - step_budget: number of steps that the agent can take
 
     step_output_model:
-        The `step_output_schema` must contain the following fields:
+        The `step_output_model` must contain the following fields:
             - content (str): the agent's response
             - action (str): one of the available tools
             - next_action (str): next action to take, one of the options should be `final answer`
@@ -82,10 +83,13 @@ class ReasoningAgent(Agent):
                 confidence: float
                 step_number: int
                 remaining_step_budget: int
+            ```
 
-            # This is what will be used to populate the `step_output_schema` variable
-            # in your prompt template.
+            This model will be used to populate the `step_output_schema` variable
+            in your prompt template, e.g.,
+            ```python
             schema = dict(StepOutput.model_json_schema().items())
+            ```
             ```
     """
 
@@ -99,7 +103,7 @@ class ReasoningAgent(Agent):
     )
     reasoning_prompt: str | Path = Field(
         description="Jinja prompt template as a string or path to a `.txt` file. See the `prompt` section of the docstring for more information, or check out the documentation here: TODO",
-        default=ReasoningPrompt,
+        default=REASONING_PROMPT,
     )
     step_output_model: type[BaseModel] | None = Field(
         description="Output schema for processing the result of a single step. See the `prompt` section of the docstring for more information, or check out the documentation here: TODO",
@@ -122,7 +126,7 @@ class ReasoningAgent(Agent):
         return super().grab_history_for_invokable_execution()
 
     @model_validator(mode="after")
-    def set_private_attrs(self) -> "ReasoningAgent":
+    def set_private_attrs(self) -> "BeehiveReasoningAgent":
         if self.chat_loop > 1:
             logger.warning(
                 "Ignoring `chat_loop` parameter and using the `step_budget` value to control the executor loop."
@@ -234,10 +238,12 @@ class ReasoningAgent(Agent):
         self.set_system_message(
             BHPrompt(  # type: ignore
                 template=self.reasoning_prompt,
-                backstory=self.backstory,
-                tools="\n".join(tool_names_descriptions),
-                step_budget=str(self.step_budget),
-                step_output_schema=self.step_output_model,
+                **{
+                    "backstory": self.backstory,
+                    "tools": "\n".join(tool_names_descriptions),
+                    "step_budget": str(self.step_budget),
+                    "step_output_schema": self.step_output_model.schema(),
+                },
             ).render()
         )
         return self
@@ -356,13 +362,13 @@ class ReasoningAgent(Agent):
 
             # If there is a JSON decoder error, then the agent likely returned two steps
             # together.
-            except json.decoder.JSONDecodeError:
+            except (json.decoder.JSONDecodeError, ValidationError):
                 total_count += 1
                 if pass_back_model_errors:
                     additional_system_message = BHMessage(
                         role=MessageRole.SYSTEM,
                         content=ModelErrorPrompt(
-                            error=f"Encountered a JSONDecodeError with the following content: <content>{step_message.content}</content>. You likely responded with two steps grouped together. This is incorrect. **RESPOND WITH ONE STEP AT A TIME, INCLUDING REFLECTIONS.**"
+                            error=f"Encountered a JSONDecodeError with the following content: <content>{step_message.content}</content>. Review the original instructions and make sure your output adheres to all of the requirements. Do not make this same mistake again."
                         ).render(),
                     )
                     self.state.append(additional_system_message)
@@ -381,9 +387,6 @@ class ReasoningAgent(Agent):
                     )
                     self.state.append(additional_system_message)
                 else:
-                    print(
-                        f"Encountered an issue with when prompting {self.name}: {str(traceback.format_exc())}"
-                    )
                     raise
 
         return all_messages
@@ -421,6 +424,8 @@ class ReasoningAgent(Agent):
         # Define the printer and create Panel for the invokable
         printer = stdout_printer if stdout_printer else Printer()
         if verbose:
+            if not printer._all_beehives:
+                printer._console.print(printer.separation_rule())
             printer._console.print(
                 printer.invokable_label_text(
                     self.name,

@@ -1,6 +1,11 @@
+import inspect
+import json
 import logging
+import traceback
+from typing import Callable
 
-from pydantic import Field, PrivateAttr, model_validator
+from pydantic import BaseModel, Field, PrivateAttr, model_validator
+from pydantic_core import ValidationError
 
 from beehive.invokable.base import Agent, Invokable
 from beehive.invokable.executor import InvokableExecutor
@@ -8,7 +13,12 @@ from beehive.invokable.types import AnyBHMessageSequence, ExecutorOutput
 from beehive.invokable.utils import _construct_bh_tools_map
 from beehive.message import BHMessage, BHToolMessage, MessageRole
 from beehive.models.base import BHChatModel
-from beehive.prompts import ConciseContextPrompt, FullContextPrompt, ModelErrorPrompt
+from beehive.prompts import (
+    AgentSystemMessagePrompt,
+    ConciseContextPrompt,
+    FullContextPrompt,
+    ModelErrorPrompt,
+)
 from beehive.tools.base import BHTool
 from beehive.utilities.printer import Printer
 
@@ -22,10 +32,12 @@ class BeehiveAgent(Agent):
     - `name` (str): the invokable name.
     - `backstory` (str): backstory for the AI actor. This is used to prompt the AI actor and direct tasks towards it. Default is: 'You are a helpful AI assistant.'
     - `model` (`BHChatModel`): chat model used by the invokable to execute its function.
-    - `chat_loop` (int): number of times the model should loop when responding to a task. Usually, this will be 1, but certain prompting patterns may require more loops (e.g., chain-of-thought prompting).
     - `state` (list[`BHMessage` | `BHToolMessage`]): list of messages that this actor has seen. This enables the actor to build off of previous conversations / outputs.
     - `temperature` (int): temperature setting for the model.
     - `tools` (list[Callable[..., Any]]): functions that this agent can use to answer questions. These functions are converted to tools that can be intepreted and executed by LLMs. Note that the language model must support tool calling for these tools to be properly invoked.
+    - `response_model` (type[`BaseModel`] | None): response model for this agent. This should be a Pydantic BaseModel. Default is `None`.
+    - `termination_condition` (Callable[..., bool]): condition which, if met, breaks the BeehiveAgent out of the chat loop. This should be a function that takes a `response_model` instance as input.
+    - `chat_loop` (int): number of times the model should loop when responding to a task. Usually, this will be 1, but certain prompting patterns may require more loops. This should always be used with a `response_model` and a `termination_condition`.
     - `docstring_format` (`DocstringFormat` | None): docstring format in functions. Beehive uses these docstrings to convert functions into LLM-compatible tools. If `None`, then Beehive will autodetect the docstring format and parse the arg descriptions. Default is `None`.
     - `history` (bool): whether to use previous interactions / messages when responding to the current task. Default is `False`.
     - `history_lookback` (int): number of days worth of previous messages to use for answering the current task.
@@ -50,6 +62,19 @@ class BeehiveAgent(Agent):
         ),
     )
 
+    response_model: type[BaseModel] | None = Field(
+        description="Response model for this agent. This should be a Pydantic BaseModel.",
+        default=None,
+    )
+    termination_condition: Callable[..., bool] | None = Field(
+        description="Condition which, if met, breaks the BeehiveAgent out of the chat loop. This should be a function that takes a `response_model` instance as input.",
+        default=None,
+    )
+    chat_loop: int = Field(
+        description="number of times the model should loop when responding to a task. Usually, this will be 1, but certain prompting patterns may require more loops. This should always be used with a `response_model` and a `termination_condition`.",
+        default=1,
+    )
+
     _system_message: BHMessage = PrivateAttr()
     _tools_map: dict[str, BHTool] = PrivateAttr(default_factory=dict)
 
@@ -61,7 +86,39 @@ class BeehiveAgent(Agent):
         self._tools_map, self._tools_serialized = _construct_bh_tools_map(
             self.tools, self.docstring_format
         )
-        self.set_system_message(self.backstory)
+        self.set_system_message(
+            AgentSystemMessagePrompt(
+                backstory=self.backstory,
+                response_model_schema=json.dumps(self.response_model.schema())
+                if self.response_model
+                else None,
+            ).render()
+        )
+
+        # If the chat loop is greater than 1, than the user must specify a
+        # response_model and a termination condition.
+        if self.chat_loop > 1:
+            if not self.response_model:
+                raise ValueError(
+                    "Agents that use a `chat_loop` must use a `response_model` for their output."
+                )
+            if not self.termination_condition:
+                raise ValueError(
+                    "Agents that use a `chat_loop` must use a `termination_condition` to control the loop flow."
+                )
+
+            # The termination condition is a function that takes one argument — an
+            # instance of the response_model.
+            spec = inspect.getfullargspec(self.termination_condition)
+            if spec.kwonlyargs:
+                raise ValueError(
+                    "Keyword-only arguments not allowed in `termination_condition` function."
+                )
+            if len(spec.args) > 1:
+                raise ValueError(
+                    "Multiple arguments not allowed in `termination_condition` function."
+                )
+
         return self
 
     def set_system_message(self, system_message: str):
@@ -100,6 +157,7 @@ class BeehiveAgent(Agent):
         success_count = 0
         total_count = 0
         all_messages: list[BHMessage | BHToolMessage] = []
+        flag_terminate: bool = False
         while success_count < self.chat_loop:
             if total_count > retry_limit:
                 break
@@ -120,21 +178,56 @@ class BeehiveAgent(Agent):
                         self.state,
                         printer,
                     )
+
+                # If the user has specified a response model, confirm that the output of
+                # the first message adheres to that schema. Note that we only need to
+                # look at the first message, since anything beyond that will be tool
+                # calls.
+                if self.response_model:
+                    # Mypy
+                    if not self.termination_condition:
+                        raise ValueError(
+                            "Agents that use a `chat_loop` must use a `termination_condition` to control the loop flow."
+                        )
+                    # This will trigger some sort of validation error or
+                    # JSONDecodeError, which we can then use to re-prompt the agent.
+                    if iter_messages[0].content:
+                        response_obj = self.response_model(
+                            **json.loads(iter_messages[0].content)
+                        )
+                        flag_terminate = self.termination_condition(response_obj)
+
                 self.state.extend(iter_messages)
                 all_messages.extend(iter_messages)
                 success_count += 1
-            except Exception as e:
+
+                # Terminate
+                if flag_terminate:
+                    break
+            except (json.decoder.JSONDecodeError, ValidationError):
                 total_count += 1
                 if pass_back_model_errors:
                     additional_system_message = BHMessage(
                         role=MessageRole.SYSTEM,
-                        content=ModelErrorPrompt(error=str(e)).render(),
+                        content=ModelErrorPrompt(
+                            error=f"Encountered a JSONDecodeError with the following content: <content>{iter_messages[0].content}</content>. **All output must be formatted according to the JSON schema described in the instructions**. Do not make this same mistake again."
+                        ).render(),
                     )
                     self.state.append(additional_system_message)
                 else:
-                    print(
-                        f"Encountered an issue with when prompting {self.name}: {str(e)}"
+                    raise
+
+            except Exception:
+                total_count += 1
+                if pass_back_model_errors:
+                    additional_system_message = BHMessage(
+                        role=MessageRole.SYSTEM,
+                        content=ModelErrorPrompt(
+                            error=str(traceback.format_exc())
+                        ).render(),
                     )
+                    self.state.append(additional_system_message)
+                else:
                     raise
 
         # Print

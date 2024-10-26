@@ -23,7 +23,7 @@ Here is the output schema for a step:
 </schema>
 
 - **You must use one of these tools during your thinking process, but you do not have to call a tool during every step. If you call a tool, then the "action" key in the step JSON should reflect the tool name.**
-- **Perform a reflection after every 3 steps.** Reflection is a critical part of your process. After every 3 steps, review the reasoning so far by answering the following questions:
+- **After every three steps, your next action should be to reflect on your previous responses.** Reflection is a critical part of your process. After every 3 steps, review the reasoning so far by answering the following questions:
    - Have you explored all angles of the problem?
    - Have you considered potential biases in your approach?
    - Could an alternative solution path be more effective?

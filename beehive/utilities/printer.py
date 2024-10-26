@@ -100,5 +100,7 @@ class Printer(BaseModel):
         if not completion_messages:
             raise ValueError("Must specify `completion_messages` for printing!")
         self._console.print(
-            Text(" ".join([str(x.content) for x in completion_messages])),
+            Text(
+                "\n\n".join(filter(None, [str(x.content) for x in completion_messages]))
+            ),
         )
