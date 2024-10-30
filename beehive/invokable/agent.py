@@ -201,9 +201,22 @@ class BeehiveAgent(Agent):
                 all_messages.extend(iter_messages)
                 success_count += 1
 
+                # Print
+                if verbose and not stream:
+                    if iter_messages:
+                        printer.print_invokable_output(
+                            completion_messages=iter_messages,
+                        )
+
                 # Terminate
                 if flag_terminate:
                     break
+
+                if verbose and not stream:
+                    if iter_messages:
+                        printer.print_standard(
+                            ""
+                        )  # to make sure there is a new line after each step
             except (json.decoder.JSONDecodeError, ValidationError):
                 total_count += 1
                 if pass_back_model_errors:
@@ -229,13 +242,6 @@ class BeehiveAgent(Agent):
                     self.state.append(additional_system_message)
                 else:
                     raise
-
-        # Print
-        if verbose and not stream:
-            if all_messages:
-                printer.print_invokable_output(
-                    completion_messages=all_messages,
-                )
 
         return all_messages
 
