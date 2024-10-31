@@ -125,7 +125,6 @@ class Beehive(Invokable):
     - `name` (str): the invokable name.
     - `backstory` (str): backstory for the AI actor. This is used to prompt the AI actor and direct tasks towards it. Default is: 'You are a helpful AI assistant.'
     - `model` (`BHChatModel` | `BaseChatModel`): chat model used by the invokable to execute its function. This can be a `BHChatModel` or a Langchain `ChatModel`.
-    - `chat_loop` (int): number of times the model should loop when responding to a task. Usually, this will be 1, but certain prompting patterns may require more loops (e.g., chain-of-thought prompting).
     - `state` (list[`BHStateElt`]): list of invokables and their completion messages.
     - `execution_process` (`FixedExecution` | `DynamicExecution`): execution process, either `FixedExecution` or `DynamicExecution`. If `FixedExecution`, then the Beehive will execute the Invokables in the specified `route` in order. If `DynamicExecution`, then Beehive uses an internal router agent to determine which `Invokable` to act given the previous messages / conversation."
     - `enable_questioning` (bool): Enable invokables to ask one another clarifying questions.
@@ -1183,6 +1182,9 @@ class Beehive(Invokable):
             else:
                 last_msg = last_inv_in_context.state[-1]
 
+        # Invokation task
+        invokation_task = task.content if isinstance(task, BHMessage) else task
+
         # If the Beehive is being asked a question, the last message will have role
         # `QUESTION`.
         if (
@@ -1198,43 +1200,23 @@ class Beehive(Invokable):
             )
 
         elif self._flag_dynamic:
-            dynamic_output: list[BHStateElt] = []
-            for i in range(self.chat_loop):
-                if i == 0:
-                    invokation_task = (
-                        task.content if isinstance(task, BHMessage) else task
-                    )
-                else:
-                    invokation_task = self.state[-1].task
-                curr_loop_output = self._invoke_without_route(
-                    task=invokation_task,
-                    retry_limit=retry_limit,
-                    pass_back_model_errors=pass_back_model_errors,
-                    verbose=verbose,
-                    stream=stream,
-                    stdout_printer=printer,
-                )
-                dynamic_output.extend(curr_loop_output)
-            return dynamic_output
+            return self._invoke_without_route(
+                task=invokation_task,
+                retry_limit=retry_limit,
+                pass_back_model_errors=pass_back_model_errors,
+                verbose=verbose,
+                stream=stream,
+                stdout_printer=printer,
+            )
         else:
-            fixed_output: list[BHStateElt] = []
-            for i in range(self.chat_loop):
-                if i == 0:
-                    invokation_task = (
-                        task.content if isinstance(task, BHMessage) else task
-                    )
-                else:
-                    invokation_task = self.state[-1].task
-                curr_loop_output = self._invoke_with_route(
-                    task=invokation_task,
-                    retry_limit=retry_limit,
-                    pass_back_model_errors=pass_back_model_errors,
-                    verbose=verbose,
-                    stream=stream,
-                    stdout_printer=printer,
-                )
-                fixed_output.extend(curr_loop_output)
-            return fixed_output
+            return self._invoke_with_route(
+                task=invokation_task,
+                retry_limit=retry_limit,
+                pass_back_model_errors=pass_back_model_errors,
+                verbose=verbose,
+                stream=stream,
+                stdout_printer=printer,
+            )
 
     def invoke(
         self,

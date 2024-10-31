@@ -36,7 +36,7 @@ class BeehiveAgent(Agent):
     - `temperature` (int): temperature setting for the model.
     - `tools` (list[Callable[..., Any]]): functions that this agent can use to answer questions. These functions are converted to tools that can be intepreted and executed by LLMs. Note that the language model must support tool calling for these tools to be properly invoked.
     - `response_model` (type[`BaseModel`] | None): response model for this agent. This should be a Pydantic BaseModel. Default is `None`.
-    - `termination_condition` (Callable[..., bool]): condition which, if met, breaks the BeehiveAgent out of the chat loop. This should be a function that takes a `response_model` instance as input.
+    - `termination_condition` (Callable[..., bool] | None): condition which, if met, breaks the BeehiveAgent out of the chat loop. This should be a function that takes a `response_model` instance as input. Default is None.
     - `chat_loop` (int): number of times the model should loop when responding to a task. Usually, this will be 1, but certain prompting patterns may require more loops. This should always be used with a `response_model` and a `termination_condition`.
     - `docstring_format` (`DocstringFormat` | None): docstring format in functions. Beehive uses these docstrings to convert functions into LLM-compatible tools. If `None`, then Beehive will autodetect the docstring format and parse the arg descriptions. Default is `None`.
     - `history` (bool): whether to use previous interactions / messages when responding to the current task. Default is `False`.

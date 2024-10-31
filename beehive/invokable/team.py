@@ -5,7 +5,7 @@ from typing import Any, Callable, Tuple
 
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import BaseMessage
-from pydantic import ConfigDict, Field, PrivateAttr, model_validator
+from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, model_validator
 
 from beehive.invokable.agent import BeehiveAgent
 from beehive.invokable.base import Agent, Feedback, Invokable
@@ -15,9 +15,9 @@ from beehive.invokable.types import AnyChatModel, AnyMessageSequence
 from beehive.invokable.utils import _construct_bh_tools_map, _convert_messages_to_string
 from beehive.message import BHMessage, BHToolMessage
 from beehive.models.base import BHChatModel
-from beehive.utilities.printer import Printer
 from beehive.tools.base import BHTool
 from beehive.tools.types import DocstringFormat
+from beehive.utilities.printer import Printer
 
 
 def _invoke_agent_in_process(
@@ -29,6 +29,8 @@ def _invoke_agent_in_process(
     temperature: int,
     tools: list[Callable[..., Any]],
     task: str | BHMessage,
+    response_model: type[BaseModel] | None,
+    termination_condition: Callable[..., bool] | None,
     chat_loop: int,
     retry_limit: int,
     pass_back_model_errors: bool,
@@ -47,9 +49,11 @@ def _invoke_agent_in_process(
             name=name,
             backstory=backstory,
             model=model,
-            chat_loop=chat_loop,
             temperature=temperature,
             tools=tools,
+            response_model=response_model,
+            termination_condition=termination_condition,
+            chat_loop=chat_loop,
             feedback=True,
         )
     else:
@@ -57,7 +61,6 @@ def _invoke_agent_in_process(
             name=name,
             backstory=backstory,
             model=model,
-            chat_loop=chat_loop,
             temperature=temperature,
             tools=tools,
             feedback=True,
@@ -95,10 +98,12 @@ class AgentTeam(Invokable):
     - `name` (str): the invokable name. Team members will be given the name `{name}-{i}`, where `i` is any number between 1 and `num_members`.
     - `backstory` (str): backstory for the AI actor. This is used to prompt the AI actor and direct tasks towards it. Default is: 'You are a helpful AI assistant.'
     - `model` (`BHChatModel` | `BaseChatModel`): chat model used by the invokable to execute its function. This can be a `BHChatModel` or a Langchain `ChatModel`.
-    - `chat_loop` (int): number of times the model should loop when responding to a task. Usually, this will be 1, but certain prompting patterns may require more loops (e.g., chain-of-thought prompting).
     - `state` (list[`BHMessage` | `BHToolMessage`] | list[`BaseMessage`]): list of messages that this actor has seen. This enables the actor to build off of previous conversations / outputs.
     - `temperature` (int): temperature setting for the model.
     - `tools` (list[Callable[..., Any]]): functions that this agent can use to answer questions. These functions are converted to tools that can be intepreted and executed by LLMs. Note that the language model must support tool calling for these tools to be properly invoked.
+    - `response_model` (type[`BaseModel`] | None): response model for this agent. This should be a Pydantic BaseModel. Default is `None`.
+    - `termination_condition` (Callable[..., bool] | None): condition which, if met, breaks the BeehiveAgent out of the chat loop. This should be a function that takes a `response_model` instance as input. Default is None.
+    - `chat_loop` (int): number of times the model should loop when responding to a task. Usually, this will be 1, but certain prompting patterns may require more loops. This should always be used with a `response_model` and a `termination_condition`.
     - `docstring_format` (`DocstringFormat` | None): docstring format in functions. Beehive uses these docstrings to convert functions into LLM-compatible tools. If `None`, then Beehive will autodetect the docstring format and parse the arg descriptions. Default is `None`.
     - `history` (bool): whether to use previous interactions / messages when responding to the current task. Default is `False`.
     - `history_lookback` (int): number of days worth of previous messages to use for answering the current task.
@@ -135,6 +140,18 @@ class AgentTeam(Invokable):
             " the language model must support tool calling for these tools to be properly"
             " invoked."
         ),
+    )
+    response_model: type[BaseModel] | None = Field(
+        description="Response model for this agent. This should be a Pydantic BaseModel.",
+        default=None,
+    )
+    termination_condition: Callable[..., bool] | None = Field(
+        description="Condition which, if met, breaks the BeehiveAgent out of the chat loop. This should be a function that takes a `response_model` instance as input.",
+        default=None,
+    )
+    chat_loop: int = Field(
+        description="number of times the model should loop when responding to a task. Usually, this will be 1, but certain prompting patterns may require more loops. This should always be used with a `response_model` and a `termination_condition`.",
+        default=1,
     )
     docstring_format: DocstringFormat | None = Field(
         default=None,
@@ -177,6 +194,9 @@ class AgentTeam(Invokable):
                     backstory=self.backstory,
                     model=self.model,
                     tools=self.tools,
+                    response_model=self.response_model,
+                    termination_condition=self.termination_condition,
+                    chat_loop=self.chat_loop,
                     state=self.state,
                     history=False,  # we treat all agents as having a single history / feedback
                     feedback=False,  # we treat all agents as having a single history / feedback
@@ -263,6 +283,8 @@ class AgentTeam(Invokable):
                 self.temperature,
                 invokable.tools,
                 task,
+                self.response_model,
+                self.termination_condition,
                 self.chat_loop,
                 retry_limit,
                 pass_back_model_errors,
