@@ -136,6 +136,8 @@ def test_bh_create_async_task():
                 temperature=0,
                 tools=[],
                 task="Test task",
+                response_model=None,
+                termination_condition=None,
                 chat_loop=1,
                 retry_limit=100,
                 pass_back_model_errors=True,

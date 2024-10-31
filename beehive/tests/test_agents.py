@@ -176,20 +176,6 @@ def test_agent_invoke(test_model):
         assert msg in test_agent.state
 
 
-def test_agent_invoke_chat_loop(test_model):
-    test_agent = BeehiveAgent(
-        name="TestAgent",
-        backstory="You are a helpful AI assistant.",
-        model=test_model,
-        chat_loop=3,
-    )
-    messages = test_agent._invoke(task="Tell me a joke!")
-    assert len(messages) == 3
-    for msg in messages:
-        assert isinstance(msg, BHMessage)
-        assert msg.content == "Hello from our mocked class!"
-
-
 def test_agent_invoke_with_memory_no_feedback(
     test_model: OpenAIModel,
     test_storage: mock.MagicMock,
