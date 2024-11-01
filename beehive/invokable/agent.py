@@ -213,7 +213,7 @@ class BeehiveAgent(Agent):
                     break
 
                 if verbose and not stream:
-                    if iter_messages:
+                    if iter_messages and self.chat_loop > 1:
                         printer.print_standard(
                             ""
                         )  # to make sure there is a new line after each step
@@ -222,9 +222,7 @@ class BeehiveAgent(Agent):
                 if pass_back_model_errors:
                     additional_system_message = BHMessage(
                         role=MessageRole.SYSTEM,
-                        content=ModelErrorPrompt(
-                            error=f"Encountered a JSONDecodeError with the following content: <content>{iter_messages[0].content}</content>. **All output must be formatted according to the JSON schema described in the instructions**. Do not make this same mistake again."
-                        ).render(),
+                        content=f"Encountered a JSONDecodeError with the following content: <content>{iter_messages[0].content}</content>. **All output must be formatted according to the JSON schema described in the instructions**. Do not make this same mistake again.",
                     )
                     self.state.append(additional_system_message)
                 else:
