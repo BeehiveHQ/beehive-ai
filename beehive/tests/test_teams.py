@@ -245,7 +245,7 @@ def test_bh_debate_invoke(test_storage, test_feedback_storage, test_printer):
                     assert len(kwargs.keys()) == 2
                     assert "args" in kwargs
                     assert "callback" in kwargs
-                    assert len(kwargs["args"]) == 11
+                    assert len(kwargs["args"]) == 13
 
                     # Check state
                     state = kwargs["args"][0]
@@ -406,7 +406,7 @@ def test_ensemble_final_answer_llm(test_storage, test_feedback_storage, test_pri
                 assert len(kwargs.keys()) == 2
                 assert "args" in kwargs
                 assert "callback" in kwargs
-                assert len(kwargs["args"]) == 11
+                assert len(kwargs["args"]) == 13
 
                 # Check state
                 state = kwargs["args"][0]
@@ -494,7 +494,7 @@ def test_ensemble_final_answer_default_similarity(
                 assert len(kwargs.keys()) == 2
                 assert "args" in kwargs
                 assert "callback" in kwargs
-                assert len(kwargs["args"]) == 11
+                assert len(kwargs["args"]) == 13
 
                 # Check state
                 state = kwargs["args"][0]
@@ -586,7 +586,7 @@ def test_ensemble_final_answer_custom_similarity(
                 assert len(kwargs.keys()) == 2
                 assert "args" in kwargs
                 assert "callback" in kwargs
-                assert len(kwargs["args"]) == 11
+                assert len(kwargs["args"]) == 13
 
                 # Check state
                 state = kwargs["args"][0]
