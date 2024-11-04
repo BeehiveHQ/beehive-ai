@@ -90,3 +90,14 @@ class MockEmbeddingModel:
 
     def get_embeddings(self, *args, **kwargs):
         return [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
+
+
+class MockAsyncResult:
+    def __init__(self, result: Any):
+        self.result = result
+
+    def ready(self):
+        return True
+
+    def get(self):
+        return self.result

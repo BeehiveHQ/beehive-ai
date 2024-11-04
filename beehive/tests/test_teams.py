@@ -1,8 +1,10 @@
 import random
+from typing import Literal
 from unittest import mock
 
 import pytest
 from langchain_openai.chat_models import ChatOpenAI
+from pydantic import BaseModel
 
 from beehive.invokable.agent import BeehiveAgent
 from beehive.invokable.base import Feedback
@@ -17,7 +19,12 @@ from beehive.prompts import (
     EnsembleFuncSummaryPrompt,
     EnsembleLLMSummaryPrompt,
 )
-from beehive.tests.mocks import MockOpenAIClient, MockPrinter
+from beehive.tests.mocks import (
+    MockAsyncResult,
+    MockChatCompletion,
+    MockOpenAIClient,
+    MockPrinter,
+)
 
 
 @pytest.fixture(scope="module")
@@ -621,3 +628,79 @@ def test_ensemble_final_answer_custom_similarity(
                     final_answer="Hello from our mocked class!",
                 ).render()
                 assert last_message_content == message
+
+
+def test_team_with_response_model(test_storage, test_feedback_storage, test_printer):
+    # Test output
+    class TestResponseModel(BaseModel):
+        title: str
+        action: Literal["thought", "observation", "action", "final_answer"]
+        next_action: Literal["thought", "observation", "action", "final_answer"] | None
+        content: str
+
+    with mock.patch("beehive.models.openai_model.OpenAIModel._client") as mocked_client:
+        # Each worker will have chat loop = 3 but will terminate after the second loop.
+        response_messages: list[str] = []
+        for i in range(1, 4):
+            response_messages.append(
+                TestResponseModel(
+                    title=f"Worker {i}'s thought",
+                    action="thought",
+                    next_action="action",
+                    content=f"This is worker {i}'s first response.",
+                ).model_dump_json(),
+            )
+            response_messages.append(
+                TestResponseModel(
+                    title=f"Worker {i}'s final answer",
+                    action="final_answer",
+                    next_action=None,
+                    content=f"This is worker {i}'s final answer.",
+                ).model_dump_json(),
+            )
+            response_messages.append(
+                '{"confidence": 5, "suggestions": ["This is some silly feedback"]}',
+            )
+        chat_completion_messages = [MockChatCompletion([x]) for x in response_messages]
+        mocked_client.chat.completions.create = mock.Mock(
+            side_effect=chat_completion_messages
+        )
+
+        # Ensemble
+        ensemble = BeehiveEnsemble(
+            name="TestEnsembleWithResponseModel",
+            backstory="You are a helpful AI assistant.",
+            model=OpenAIModel(model="gpt-3.5-turbo"),
+            num_members=3,
+            final_answer_method="similarity",
+            response_model=TestResponseModel,
+            chat_loop=3,
+            termination_condition=lambda x: x.action == "final_answer",
+        )
+        ensemble._db_storage = test_storage
+
+        with mock.patch("beehive.invokable.team.Pool") as MockPool:
+            mock_pool = MockPool.return_value.__enter__.return_value
+            mock_pool.apply_async = mock.Mock(
+                side_effect=lambda func, args, callback: MockAsyncResult(
+                    result=func(*args)
+                )
+            )
+            messages, feedback = ensemble._invoke_agents_in_process(
+                task="This is a test task", printer=test_printer
+            )
+            assert len(messages.keys()) == 3
+            for i in range(1, 4):
+                assert messages.get(i, None)
+                assert len(messages[i]) == 2
+                assert messages[i][0] == BHMessage(
+                    role=MessageRole.ASSISTANT, content=response_messages[3 * i - 3]
+                )
+                assert messages[i][1] == BHMessage(
+                    role=MessageRole.ASSISTANT, content=response_messages[3 * i - 2]
+                )
+
+                assert feedback.get(i, None)
+                assert feedback[i] == Feedback(
+                    confidence=5, suggestions=["This is some silly feedback"]
+                )
