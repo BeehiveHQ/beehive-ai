@@ -13,12 +13,7 @@ from beehive.invokable.types import AnyBHMessageSequence, ExecutorOutput
 from beehive.invokable.utils import _construct_bh_tools_map
 from beehive.message import BHMessage, BHToolMessage, MessageRole
 from beehive.models.base import BHChatModel
-from beehive.prompts import (
-    AgentSystemMessagePrompt,
-    ConciseContextPrompt,
-    FullContextPrompt,
-    ModelErrorPrompt,
-)
+from beehive.prompts import ConciseContextPrompt, FullContextPrompt, ModelErrorPrompt
 from beehive.tools.base import BHTool
 from beehive.utilities.printer import Printer
 
@@ -35,9 +30,9 @@ class BeehiveAgent(Agent):
     - `state` (list[`BHMessage` | `BHToolMessage`]): list of messages that this actor has seen. This enables the actor to build off of previous conversations / outputs.
     - `temperature` (int): temperature setting for the model.
     - `tools` (list[Callable[..., Any]]): functions that this agent can use to answer questions. These functions are converted to tools that can be intepreted and executed by LLMs. Note that the language model must support tool calling for these tools to be properly invoked.
-    - `response_model` (type[`BaseModel`] | None): response model for this agent. This should be a Pydantic BaseModel. Default is `None`.
-    - `termination_condition` (Callable[..., bool] | None): condition which, if met, breaks the BeehiveAgent out of the chat loop. This should be a function that takes a `response_model` instance as input. Default is None.
-    - `chat_loop` (int): number of times the model should loop when responding to a task. Usually, this will be 1, but certain prompting patterns may require more loops. This should always be used with a `response_model` and a `termination_condition`.
+    - `response_model` (type[`BaseModel`] | None): Pydantic BaseModel defining the desired schema for the agent's output. When specified, Beehive will prompt the agent to make sure that its responses fit the models's schema. Default is `None`.
+    - `termination_condition` (Callable[..., bool] | None): condition which, if met, breaks the BeehiveAgent out of the chat loop. This should be a function that takes a `response_model` instance as input. Default is `None`.
+    - `chat_loop` (int): number of times the model should loop when responding to a task. Usually, this will be 1, but certain prompting patterns (e.g., COT, reflection) may require more loops. This should always be used with a `response_model` and a `termination_condition`.
     - `docstring_format` (`DocstringFormat` | None): docstring format in functions. Beehive uses these docstrings to convert functions into LLM-compatible tools. If `None`, then Beehive will autodetect the docstring format and parse the arg descriptions. Default is `None`.
     - `history` (bool): whether to use previous interactions / messages when responding to the current task. Default is `False`.
     - `history_lookback` (int): number of days worth of previous messages to use for answering the current task.
@@ -63,15 +58,15 @@ class BeehiveAgent(Agent):
     )
 
     response_model: type[BaseModel] | None = Field(
-        description="Response model for this agent. This should be a Pydantic BaseModel.",
+        description="Pydantic BaseModel defining the desired schema for the agent's output. When specified, Beehive will prompt the agent to make sure that its responses fit the models's schema. Default is `None`.",
         default=None,
     )
     termination_condition: Callable[..., bool] | None = Field(
-        description="Condition which, if met, breaks the BeehiveAgent out of the chat loop. This should be a function that takes a `response_model` instance as input.",
+        description="Condition which, if met, breaks the BeehiveAgent out of the chat loop. This should be a function that takes a `response_model` instance as input. Default is `None`.",
         default=None,
     )
     chat_loop: int = Field(
-        description="number of times the model should loop when responding to a task. Usually, this will be 1, but certain prompting patterns may require more loops. This should always be used with a `response_model` and a `termination_condition`.",
+        description="Number of times the model should loop when responding to a task. Usually, this will be 1, but certain prompting patterns (e.g., COT, reflection) may require more loops. This should always be used with a `response_model` and a `termination_condition`.",
         default=1,
     )
 
@@ -86,14 +81,7 @@ class BeehiveAgent(Agent):
         self._tools_map, self._tools_serialized = _construct_bh_tools_map(
             self.tools, self.docstring_format
         )
-        self.set_system_message(
-            AgentSystemMessagePrompt(
-                backstory=self.backstory,
-                response_model_schema=json.dumps(self.response_model.schema())
-                if self.response_model
-                else None,
-            ).render()
-        )
+        self.set_system_message(self.backstory)
 
         # If the chat loop is greater than 1, than the user must specify a
         # response_model and a termination condition.
@@ -219,18 +207,35 @@ class BeehiveAgent(Agent):
                         )  # to make sure there is a new line after each step
             except (json.decoder.JSONDecodeError, ValidationError):
                 total_count += 1
-                if pass_back_model_errors:
+                if total_count > retry_limit:
+                    printer.print_standard(
+                        "[red]ERROR:[/red] Exceeded total retry limit."
+                    )
+                    raise
+                elif pass_back_model_errors:
+                    if verbose and not stream:
+                        printer.print_standard(
+                            "[yellow]WARNING:[/yellow] Encountered a JSONDecodeError / Pydantic ValidationError. Passing the error back to the LLM and trying again.\n"
+                        )
                     additional_system_message = BHMessage(
                         role=MessageRole.SYSTEM,
-                        content=f"Encountered a JSONDecodeError with the following content: <content>{iter_messages[0].content}</content>. **All output must be formatted according to the JSON schema described in the instructions**. Do not make this same mistake again.",
+                        content=f"Encountered a `JSONDecodeError` / Pydantic `ValidationError` with the following content: <content>{iter_messages[0].content}</content>. **All output must be formatted according to the JSON schema described in the instructions**. Do not make this same mistake again.",
                     )
                     self.state.append(additional_system_message)
                 else:
                     raise
 
+            # TODO - we can probably clean this up
             except Exception:
                 total_count += 1
-                if pass_back_model_errors:
+                if total_count > retry_limit:
+                    printer.print_standard("ERROR: Exceeded total retry limit.")
+                    raise
+                elif pass_back_model_errors:
+                    if verbose and not stream:
+                        printer.print_standard(
+                            "[yellow]WARNING:[/yellow] Encountered an Exception. Passing the error back to the LLM and trying again.\n"
+                        )
                     additional_system_message = BHMessage(
                         role=MessageRole.SYSTEM,
                         content=ModelErrorPrompt(

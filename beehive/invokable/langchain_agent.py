@@ -1,4 +1,5 @@
 import logging
+import traceback
 from typing import Any
 
 from langchain_core.language_models.chat_models import BaseChatModel
@@ -195,10 +196,18 @@ class BeehiveLangchainAgent(Agent, LangchainMixin):
                 self.state.extend(iter_messages)
                 all_messages.extend(iter_messages)
                 break
-            except Exception as e:
-                if pass_back_model_errors:
+            except Exception:
+                total_count += 1
+                if total_count > retry_limit:
+                    printer.print_standard(
+                        "[red]ERROR:[/red] Exceeded total retry limit."
+                    )
+                    raise
+                elif pass_back_model_errors:
                     additional_system_message = SystemMessage(
-                        content=ModelErrorPrompt(error=str(e)).render()
+                        content=ModelErrorPrompt(
+                            error=str(traceback.format_exc())
+                        ).render(),
                     )
                     self.state.append(additional_system_message)
                 else:

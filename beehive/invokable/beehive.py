@@ -1,5 +1,6 @@
 import json
 import logging
+import traceback
 from typing import Literal, Tuple
 
 from langchain.chat_models.base import BaseChatModel
@@ -487,26 +488,40 @@ class Beehive(Invokable):
                 model_obj = pydantic_model(**next_agent_json)
                 break
 
-            except ValidationError as e:
-                if pass_back_model_errors:
-                    error_system_message = BHMessage(
-                        role=MessageRole.SYSTEM,
-                        content=ModelErrorPrompt(error=str(e)).render(),
+            except (json.decoder.JSONDecodeError, ValidationError):
+                counter += 1
+                if counter > retry_limit:
+                    printer.print_standard(
+                        "[red]ERROR:[/red] Router exceeded total retry limit."
                     )
-                    self._router.state.append(error_system_message)
+                    raise
+                elif pass_back_model_errors:
+                    additional_system_message = BHMessage(
+                        role=MessageRole.SYSTEM,
+                        content=f"Encountered a `JSONDecodeError` / Pydantic `ValidationError` with the following content: <content>{next_agent_message.content}</content>. **All output must be formatted according to the JSON schema described in the instructions**. Do not make this same mistake again.",
+                    )
+                    self._router.state.append(additional_system_message)
                 else:
                     raise
-            except json.JSONDecodeError as e:
-                if pass_back_model_errors:
-                    error_system_message = BHMessage(
-                        role=MessageRole.SYSTEM,
-                        content=ModelErrorPrompt(error=str(e)).render(),
+
+            # TODO - we can probably clean this up
+            except Exception:
+                counter += 1
+                if counter > retry_limit:
+                    printer.print_standard(
+                        "[red]ERROR:[/red] Router exceeded total retry limit."
                     )
-                    self._router.state.append(error_system_message)
+                    raise
+                elif pass_back_model_errors:
+                    additional_system_message = BHMessage(
+                        role=MessageRole.SYSTEM,
+                        content=ModelErrorPrompt(
+                            error=str(traceback.format_exc())
+                        ).render(),
+                    )
+                    self._router.state.append(additional_system_message)
                 else:
                     raise
-            except:
-                raise
         return model_obj, counter
 
     def invoke_router_without_route(
