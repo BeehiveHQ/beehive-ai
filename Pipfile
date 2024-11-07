@@ -7,7 +7,6 @@ name = "pypi"
 beehive-ai = {extras = ["dev"], file = ".", editable = true}
 
 [dev-packages]
-ipykernel = "*"
 
 [requires]
 python_version = "3.12"
