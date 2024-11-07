@@ -12,6 +12,9 @@ def pytest_sessionstart():
     )
     FeedbackStorage(client_path=f"{Path(INTERNAL_FOLDER_PATH).resolve()}/test_feedback")
 
+    # Reset the prompts
+    shutil.rmtree(f"{Path(INTERNAL_FOLDER_PATH).resolve()}/prompts")
+
 
 def pytest_sessionfinish():
     Path.unlink(Path(INTERNAL_FOLDER_PATH).resolve() / "test_beehive.db")
