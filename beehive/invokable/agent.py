@@ -109,6 +109,22 @@ class BeehiveAgent(Agent):
 
         return self
 
+    def check_backstory_format(self) -> "BeehiveAgent":
+        # If the user has specified a response model but does not have <schema> tags in
+        # their backstory, raise a warning.
+        if self.response_model and (
+            "<schema>" not in self.backstory or "</schema>" not in self.backstory
+        ):
+            logger.warning(
+                (
+                    "Found `response_model`, but did not find <schema>...</schema> tags in the agent's backstory. "
+                    "Without these tags, the agent's response may not be compatible with the `response_model`. "
+                    "See the documentation here https://beehivehq.github.io/beehive-ai/advanced/reasoning/ for an example."
+                )
+            )
+
+        return self
+
     def set_system_message(self, system_message: str):
         self._system_message = BHMessage(
             role=MessageRole.SYSTEM,
