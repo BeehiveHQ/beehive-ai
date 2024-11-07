@@ -77,7 +77,7 @@ reasoning_agent = BeehiveAgent(
         model="gpt-4-turbo",
     ),
     tools=[tavily_search_tool],
-    chat_loop=5,
+    chat_loop=10,
     response_model=ReactResponse,
     termination_condition=lambda x: x.step == "final_answer"
 )
@@ -124,3 +124,14 @@ answered."}
 program can also be controlled using the keyboard function keys on Apple computers."}
 ------------------------------------------------------------------------------------------------------------------------
 ```
+
+Here's what's happening under the hood:
+
+- The `ReasoningAgent` enters an invokation loop that last 10 rounds. During the first round, it is fed the user's initial task. During subsequent rounds, it simply relies on its `state` (i.e., system message, initial user task, and all previous responses).
+- During each round of the loop, Beehive casts the agent's response into an instance of the `response_model`.
+    - If there is an error and `pass_back_model_errors=True`, then Beehive wraps the traceback in a new system message and passes it back to the agent.
+    - If there is an error and `pass_back_model_errors=False`, then the agent terminates and raises the error.
+    - Note that Pydantic `ValidationErrors` or a `JSONDecodeErrors` are handled slightly differently. For these errors, Beehive provides a bit more contextual information to help the agent better craft their response.
+- Once the `response_model` instance has been created, Beehive checks whether the `termination_condition` has been met. If it has, then the Beehive tells the agent to exit the invokation loop. If not, then Beehive tells the agent to continue until it has responded `chat_loop` times.
+
+In the above example, the `ReasoningAgent` looped 7 times. In its last message, the termination condition was met (i.e., `"step": "final_answer"`), so the agent exited the loop.

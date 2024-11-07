@@ -156,11 +156,14 @@ class BeehiveAgent(Agent):
             try:
                 if not stream:
                     iter_messages = self.model.chat(
-                        task_message, self.temperature, self._tools_map, self.state
+                        task_message if success_count == 0 else None,
+                        self.temperature,
+                        self._tools_map,
+                        self.state,
                     )
                 else:
                     iter_messages = self.model.stream(
-                        task_message,
+                        task_message if success_count == 0 else None,
                         self.temperature,
                         self._tools_map,
                         self.state,
