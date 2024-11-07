@@ -1,4 +1,5 @@
 site_name: Beehive Docs
+repo_url: https://github.com/beehivehq/beehive-ai
 theme:
   name: material
   features:
@@ -112,3 +113,4 @@ nav:
 - Advanced:
   - Custom Invokable: 'advanced/custom_invokable.md'
   - Reasoning: 'advanced/reasoning.md'
+- cookbook.md
