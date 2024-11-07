@@ -79,20 +79,6 @@ def test_lc_agent_invoke(test_model, test_printer):
     assert last_message.content == "Hello from our mocked class!"
 
 
-def test_lc_agent_invoke_chat_loop(test_model):
-    test_agent = BeehiveLangchainAgent(
-        name="TestLangchainAgent",
-        backstory="You are a helpful AI assistant.",
-        model=test_model,
-        chat_loop=3,
-    )
-    messages = test_agent._invoke(task="Tell me a joke!")
-    assert len(messages) == 3
-    for msg in messages:
-        assert isinstance(msg, AIMessage)
-        assert msg.content == "Hello from our mocked class!"
-
-
 def test_lc_agent_invoke_with_memory_no_feedback(
     test_model: OpenAIModel,
     test_storage: mock.MagicMock,

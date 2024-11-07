@@ -1,4 +1,5 @@
 import logging
+import traceback
 from typing import Any
 
 from langchain_core.language_models.chat_models import BaseChatModel
@@ -34,7 +35,6 @@ class BeehiveLangchainAgent(Agent, LangchainMixin):
     - `name` (str): the invokable name.
     - `backstory` (str): backstory for the AI actor. This is used to prompt the AI actor and direct tasks towards it. Default is: 'You are a helpful AI assistant.'
     - `model` (`BaseChatModel`): chat model used by the invokable to execute its function.
-    - `chat_loop` (int): number of times the model should loop when responding to a task. Usually, this will be 1, but certain prompting patterns may require more loops (e.g., chain-of-thought prompting).
     - `state` (list[`BaseMessage`]): list of messages that this actor has seen. This enables the actor to build off of previous conversations / outputs.
     - `temperature` (int): temperature setting for the model.
     - `tools` (list[Callable[..., Any]]): functions that this agent can use to answer questions. These functions are converted to tools that can be intepreted and executed by LLMs. Note that the language model must support tool calling for these tools to be properly invoked.
@@ -149,10 +149,6 @@ class BeehiveLangchainAgent(Agent, LangchainMixin):
         stream: bool = False,
         stdout_printer: Printer | None = None,
     ) -> list[BaseMessage]:
-        if retry_limit < self.chat_loop:
-            raise ValueError(
-                "`retry_limit` must be greater than `chat_loop` attribute."
-            )
         printer = stdout_printer if stdout_printer else Printer()
 
         # Make sure the state is composed of Langchain messages
@@ -167,10 +163,9 @@ class BeehiveLangchainAgent(Agent, LangchainMixin):
         self.state.append(task_message)
 
         # Invoke the chat model. Keep track of number of loops
-        success_count = 0
         total_count = 0
         all_messages: list[BaseMessage] = []
-        while success_count < self.chat_loop:
+        while True:
             if total_count > retry_limit:
                 break
             total_count += 1
@@ -179,39 +174,44 @@ class BeehiveLangchainAgent(Agent, LangchainMixin):
                 iter_messages: BaseMessage | list[BaseMessage] = self.model.invoke(
                     self.state, config=self.config, stop=self.stop, **self.model_extra
                 )
-            except Exception as e:
-                if pass_back_model_errors:
+                if not isinstance(iter_messages, list):
+                    iter_messages = [iter_messages]
+
+                # If the model wants to invoke tool(s), parse the tool calls and create
+                # separate messages for them.
+                for msg in iter_messages:
+                    additional_kwargs = msg.additional_kwargs
+                    if "tool_calls" in additional_kwargs:
+                        valid_tool_calls, _ = default_tool_parser(
+                            additional_kwargs["tool_calls"]
+                        )
+                        for tc in valid_tool_calls:
+                            _tool = self._tools_map[tc["name"]]
+                            iter_messages.append(
+                                ToolMessage(
+                                    content=_tool.invoke(tc["args"], self.config),
+                                    tool_call_id=tc["id"],
+                                )
+                            )
+                self.state.extend(iter_messages)
+                all_messages.extend(iter_messages)
+                break
+            except Exception:
+                total_count += 1
+                if total_count > retry_limit:
+                    printer.print_standard(
+                        "[red]ERROR:[/red] Exceeded total retry limit."
+                    )
+                    raise
+                elif pass_back_model_errors:
                     additional_system_message = SystemMessage(
-                        content=ModelErrorPrompt(error=str(e)).render()
+                        content=ModelErrorPrompt(
+                            error=str(traceback.format_exc())
+                        ).render(),
                     )
                     self.state.append(additional_system_message)
                 else:
-                    printer.print_standard(
-                        f"Encountered an issue with when prompting {self.name}: {str(e)}"
-                    )
-
-            if not isinstance(iter_messages, list):
-                iter_messages = [iter_messages]
-
-            # If the model wants to invoke tool(s), parse the tool calls and create
-            # separate messages for them.
-            for msg in iter_messages:
-                additional_kwargs = msg.additional_kwargs
-                if "tool_calls" in additional_kwargs:
-                    valid_tool_calls, _ = default_tool_parser(
-                        additional_kwargs["tool_calls"]
-                    )
-                    for tc in valid_tool_calls:
-                        _tool = self._tools_map[tc["name"]]
-                        iter_messages.append(
-                            ToolMessage(
-                                content=_tool.invoke(tc["args"], self.config),
-                                tool_call_id=tc["id"],
-                            )
-                        )
-            self.state.extend(iter_messages)
-            all_messages.extend(iter_messages)
-            success_count += 1
+                    raise
 
         # Print
         if verbose:
@@ -254,6 +254,8 @@ class BeehiveLangchainAgent(Agent, LangchainMixin):
         # Define the printer and create Panel for the invokable
         printer = stdout_printer if stdout_printer else Printer()
         if verbose:
+            if not printer._all_beehives:
+                printer._console.print(printer.separation_rule())
             printer._console.print(
                 printer.invokable_label_text(
                     self.name,

@@ -1,12 +1,15 @@
+import json
+from typing import Literal
 from unittest import mock
 
 import pytest
+from pydantic import BaseModel
 
 from beehive.invokable.agent import BeehiveAgent
 from beehive.invokable.base import Context, Feedback, Invokable
 from beehive.message import BHMessage, MessageRole
 from beehive.models.openai_model import OpenAIModel
-from beehive.tests.mocks import MockOpenAIClient, MockPrinter
+from beehive.tests.mocks import MockChatCompletion, MockOpenAIClient, MockPrinter
 
 
 @pytest.fixture(scope="module")
@@ -176,20 +179,6 @@ def test_agent_invoke(test_model):
         assert msg in test_agent.state
 
 
-def test_agent_invoke_chat_loop(test_model):
-    test_agent = BeehiveAgent(
-        name="TestAgent",
-        backstory="You are a helpful AI assistant.",
-        model=test_model,
-        chat_loop=3,
-    )
-    messages = test_agent._invoke(task="Tell me a joke!")
-    assert len(messages) == 3
-    for msg in messages:
-        assert isinstance(msg, BHMessage)
-        assert msg.content == "Hello from our mocked class!"
-
-
 def test_agent_invoke_with_memory_no_feedback(
     test_model: OpenAIModel,
     test_storage: mock.MagicMock,
@@ -318,3 +307,276 @@ def test_agent_invoke_with_context(
         and state[3].role == MessageRole.ASSISTANT
         and state[3].content == "Hello from our mocked class!"
     )
+
+
+def test_agent_chat_loop(
+    test_storage: mock.MagicMock,
+    test_feedback_storage: mock.MagicMock,
+    test_printer: mock.MagicMock,
+):
+    # Test output
+    class TestResponseModel(BaseModel):
+        title: str
+        action: Literal["thought", "observation", "action", "final_answer"]
+        next_action: Literal["thought", "observation", "action", "final_answer"] | None
+        content: str
+
+    with mock.patch(
+        "beehive.models.openai_model.OpenAIModel._client"
+    ) as mocked_openai_client:
+        chat_message_strings = [
+            TestResponseModel(
+                title="Title1",
+                action="thought",
+                next_action="observation",
+                content="This is the first reasoning message.",
+            ).model_dump_json(),
+            TestResponseModel(
+                title="Title2",
+                action="observation",
+                next_action="action",
+                content="This is the second reasoning message.",
+            ).model_dump_json(),
+            TestResponseModel(
+                title="Title3",
+                action="action",
+                next_action="final_answer",
+                content="This is the third reasoning message.",
+            ).model_dump_json(),
+            TestResponseModel(
+                title="Title4",
+                action="final_answer",
+                next_action=None,
+                content="This is the final answer.",
+            ).model_dump_json(),
+        ]
+        chat_messages = [MockChatCompletion([x]) for x in chat_message_strings]
+        mocked_openai_client.chat.completions.create = mock.Mock(
+            side_effect=chat_messages
+        )
+
+        # Create reasoning agent
+        chat_loop = 4
+        reasoning_agent = BeehiveAgent(
+            name="ReasoningAgent",
+            backstory="You are a helpful AI assistant.",
+            model=OpenAIModel(model="gpt-3.5-turbo"),
+            response_model=TestResponseModel,
+            termination_condition=lambda x: x.action == "final_answer",
+            chat_loop=chat_loop,
+        )
+        output = reasoning_agent.invoke(
+            "This is a test task.", stdout_printer=test_printer
+        )
+
+        # There should be four messages in the output
+        assert len(output["messages"]) == chat_loop
+        for i in range(4):
+            assert output["messages"][i] == BHMessage(
+                role=MessageRole.ASSISTANT, content=chat_message_strings[i]
+            )
+
+
+def test_agent_chat_loop_early_termination(
+    test_storage: mock.MagicMock,
+    test_feedback_storage: mock.MagicMock,
+    test_printer: mock.MagicMock,
+):
+    # Test output
+    class TestResponseModel(BaseModel):
+        title: str
+        action: Literal["thought", "observation", "action", "final_answer"]
+        next_action: Literal["thought", "observation", "action", "final_answer"] | None
+        content: str
+
+    with mock.patch(
+        "beehive.models.openai_model.OpenAIModel._client"
+    ) as mocked_openai_client:
+        chat_message_strings = [
+            TestResponseModel(
+                title="Title1",
+                action="thought",
+                next_action="observation",
+                content="This is the first reasoning message.",
+            ).model_dump_json(),
+            TestResponseModel(
+                title="Title2",
+                action="observation",
+                next_action="action",
+                content="This is the second reasoning message.",
+            ).model_dump_json(),
+            TestResponseModel(
+                title="Title3",
+                action="final_answer",
+                next_action=None,
+                content="This is the final answer.",
+            ).model_dump_json(),
+        ]
+        chat_messages = [MockChatCompletion([x]) for x in chat_message_strings]
+        mocked_openai_client.chat.completions.create = mock.Mock(
+            side_effect=chat_messages
+        )
+
+        # Create reasoning agent
+        chat_loop = 4
+        reasoning_agent = BeehiveAgent(
+            name="ReasoningAgent",
+            backstory="You are a helpful AI assistant.",
+            model=OpenAIModel(model="gpt-3.5-turbo"),
+            response_model=TestResponseModel,
+            termination_condition=lambda x: x.action == "final_answer",
+            chat_loop=chat_loop,
+        )
+        output = reasoning_agent.invoke(
+            "This is a test task.", stdout_printer=test_printer
+        )
+
+        # There should be three messages in the output — we do not invoke the agent a
+        # fourth time because of the termination condition.
+        assert len(output["messages"]) == 3
+        for i in range(3):
+            assert output["messages"][i] == BHMessage(
+                role=MessageRole.ASSISTANT, content=chat_message_strings[i]
+            )
+
+
+def test_agent_response_model_bad_output_no_pass_back_model_errors(
+    test_storage: mock.MagicMock,
+    test_feedback_storage: mock.MagicMock,
+    test_printer: mock.MagicMock,
+):
+    # Test output
+    class TestResponseModel(BaseModel):
+        title: str
+        action: Literal["thought", "observation", "action", "final_answer"]
+        next_action: Literal["thought", "observation", "action", "final_answer"] | None
+        content: str
+
+    with mock.patch(
+        "beehive.models.openai_model.OpenAIModel._client"
+    ) as mocked_openai_client:
+        chat_message_strings = [
+            TestResponseModel(
+                title="Title1",
+                action="thought",
+                next_action="observation",
+                content="This is the first reasoning message.",
+            ).model_dump_json(),
+            TestResponseModel(
+                title="Title2",
+                action="observation",
+                next_action="action",
+                content="This is the second reasoning message.",
+            ).model_dump_json(),
+            "This is a poorly formatted output.",
+        ]
+        chat_messages = [MockChatCompletion([x]) for x in chat_message_strings]
+        mocked_openai_client.chat.completions.create = mock.Mock(
+            side_effect=chat_messages
+        )
+
+        # Create reasoning agent
+        chat_loop = 4
+        reasoning_agent = BeehiveAgent(
+            name="ReasoningAgent",
+            backstory="You are a helpful AI assistant.",
+            model=OpenAIModel(model="gpt-3.5-turbo"),
+            response_model=TestResponseModel,
+            termination_condition=lambda x: x.action == "final_answer",
+            chat_loop=chat_loop,
+        )
+
+        # Invoke without passing back the model errors. This should raise a JSON error.
+        with pytest.raises(json.decoder.JSONDecodeError) as _:
+            reasoning_agent.invoke(
+                "This is a test task.",
+                pass_back_model_errors=False,
+                stdout_printer=test_printer,
+            )
+
+
+def test_agent_response_model_bad_output_yes_pass_back_model_errors(
+    test_storage: mock.MagicMock,
+    test_feedback_storage: mock.MagicMock,
+    test_printer: mock.MagicMock,
+):
+    # Test output
+    class TestResponseModel(BaseModel):
+        title: str
+        action: Literal["thought", "observation", "action", "final_answer"]
+        next_action: Literal["thought", "observation", "action", "final_answer"] | None
+        content: str
+
+    with mock.patch(
+        "beehive.models.openai_model.OpenAIModel._client"
+    ) as mocked_openai_client:
+        chat_message_strings = [
+            TestResponseModel(
+                title="Title1",
+                action="thought",
+                next_action="observation",
+                content="This is the first reasoning message.",
+            ).model_dump_json(),
+            TestResponseModel(
+                title="Title2",
+                action="observation",
+                next_action="action",
+                content="This is the second reasoning message.",
+            ).model_dump_json(),
+            "This is a poorly formatted output.",
+            TestResponseModel(
+                title="Title3",
+                action="final_answer",
+                next_action=None,
+                content="This is the final answer.",
+            ).model_dump_json(),
+        ]
+        chat_messages = [MockChatCompletion([x]) for x in chat_message_strings]
+        mocked_openai_client.chat.completions.create = mock.Mock(
+            side_effect=chat_messages
+        )
+
+        # Create reasoning agent
+        chat_loop = 4
+        reasoning_agent = BeehiveAgent(
+            name="ReasoningAgent",
+            backstory="You are a helpful AI assistant.",
+            model=OpenAIModel(model="gpt-3.5-turbo"),
+            response_model=TestResponseModel,
+            termination_condition=lambda x: x.action == "final_answer",
+            chat_loop=chat_loop,
+        )
+
+        # Invoke WITH passing back the model errors. This should add an extra
+        # system message to our agent's state.
+        output = reasoning_agent.invoke(
+            "This is a test task.",
+            pass_back_model_errors=True,
+            stdout_printer=test_printer,
+        )
+
+        # There should be three messages in the output — we do not invoke the agent a
+        # fourth time because of the termination condition.
+        assert len(output["messages"]) == 3
+        assert output["messages"][0] == BHMessage(
+            role=MessageRole.ASSISTANT, content=chat_message_strings[0]
+        )
+        assert output["messages"][1] == BHMessage(
+            role=MessageRole.ASSISTANT, content=chat_message_strings[1]
+        )
+        assert output["messages"][2] == BHMessage(
+            role=MessageRole.ASSISTANT, content=chat_message_strings[3]
+        )
+
+        # In the state, we should see the following:
+        #   System message
+        #   User task
+        #   First reasoning message
+        #   Second reasoning message
+        #   System message
+        #   Third reasoning message
+        assert len(reasoning_agent.state) == 6
+        assert isinstance(reasoning_agent.state[4], BHMessage)
+        assert reasoning_agent.state[4].role == MessageRole.SYSTEM
+        expected_msg = "Encountered a `JSONDecodeError` / Pydantic `ValidationError` with the following content: <content>This is a poorly formatted output.</content>. **All output must be formatted according to the JSON schema described in the instructions**. Do not make this same mistake again."
+        assert reasoning_agent.state[4].content == expected_msg

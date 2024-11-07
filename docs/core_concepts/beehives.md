@@ -9,7 +9,6 @@ Beehives enable different invokables to collaborate with one another to achieve 
 | name<br>`str` | The invokable name. |
 | backstory<br>`str` | Backstory for the AI actor. This is used to prompt the AI actor and direct tasks towards it. Default is: 'You are a helpful AI assistant.' |
 | model<br>`BHChatModel | BaseChatModel` | Chat model used by the invokable to execute its function. This can be a `BHChatModel` or a Langchain `ChatModel`. |
-| chat_loop<br>`int` | Number of times the model should loop when responding to a task. Usually, this will be 1, but certain prompting patterns may require more loops (e.g., chain-of-thought prompting). |
 | state<br>`list[BHMessage | BHToolMessage] | list[BaseMessage]` | List of messages that this actor has seen. This enables the actor to build off of previous conversations / outputs. |
 | execution_process<br>`FixedExecution | DynamicExecution` | Execution process, either `FixedExecution` or `DynamicExecution`. If `FixedExecution`, then the Beehive will execute the Invokables in the `FixedExecution.route`. If `DynamicExecution`, then Beehive uses an internal router agent to determine which `Invokable` to act given the previous messages / conversation. |
 | enable_questioning<br>`bool` | Enable invokables to ask one another clarifying questions at runtime. |

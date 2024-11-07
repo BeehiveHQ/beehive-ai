@@ -43,10 +43,10 @@ from beehive.memory.db_storage import (
 from beehive.message import BHMessage, BHToolMessage, MessageRole
 from beehive.models.base import BHChatModel, BHEmbeddingModel
 from beehive.models.openai_embedder import OpenAIEmbedder
-from beehive.utilities.printer import Printer
 from beehive.prompts import BHPrompt, FullContextPrompt
 from beehive.tools.base import BHTool, BHToolCall
 from beehive.tools.types import DocstringFormat
+from beehive.utilities.printer import Printer
 
 # Logging
 logging.basicConfig(
@@ -138,7 +138,6 @@ class Invokable(BaseModel):
     - `name` (str): the invokable name.
     - `backstory` (str): backstory for the AI actor. This is used to prompt the AI actor and direct tasks towards it. Default is: 'You are a helpful AI assistant.'
     - `model` (`BHChatModel` | `BaseChatModel`): chat model used by the invokable to execute its function. This can be a `BHChatModel` or a Langchain `ChatModel`.
-    - `chat_loop` (int): number of times the model should loop when responding to a task. Usually, this will be 1, but certain prompting patterns may require more loops (e.g., chain-of-thought prompting).
     - `state` (list[`BHMessage` | `BHToolMessage`] | list[`BaseMessage`]): list of messages that this actor has seen. This enables the actor to build off of previous conversations / outputs.
     - `history` (bool): whether to use previous interactions / messages when responding to the current task. Default is `False`.
     - `history_lookback` (int): number of days worth of previous messages to use for answering the current task.
@@ -168,14 +167,6 @@ class Invokable(BaseModel):
             "ChatModel used by the invokable to execute its function. This can be a "
             "Beehive ChatModel or a Langchain ChatModel."
         )
-    )
-    chat_loop: int = Field(
-        default=1,
-        description=(
-            "Number of times the model should loop when responding to a task. Usually,"
-            " this will be 1, but certain prompting patterns may require more loops"
-            " (e.g., chain-of-thought prompting)."
-        ),
     )
     state: list[Any] = Field(
         default_factory=list,
@@ -635,7 +626,6 @@ class Agent(Invokable):
     - `name` (str): the invokable name.
     - `backstory` (str): backstory for the AI actor. This is used to prompt the AI actor and direct tasks towards it. Default is: 'You are a helpful AI assistant.'
     - `model` (`BHChatModel` | `BaseChatModel`): chat model used by the invokable to execute its function. This can be a `BHChatModel` or a Langchain `ChatModel`.
-    - `chat_loop` (int): number of times the model should loop when responding to a task. Usually, this will be 1, but certain prompting patterns may require more loops (e.g., chain-of-thought prompting).
     - `state` (list[`BHMessage` | `BHToolMessage`] | list[`BaseMessage`]): list of messages that this actor has seen. This enables the actor to build off of previous conversations / outputs.
     - `temperature` (int): temperature setting for the model.
     - `tools` (list[Callable[..., Any]]): functions that this agent can use to answer questions. These functions are converted to tools that can be intepreted and executed by LLMs. Note that the language model must support tool calling for these tools to be properly invoked.

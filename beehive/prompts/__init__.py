@@ -36,7 +36,7 @@ def prompt_generator(prompt_template: Path | str, **kwargs) -> str:
 
 class BHPrompt(BaseModel):
     model_config = ConfigDict(extra="allow")
-    template: str
+    template: str | Path
 
     def render(self) -> str:
         return prompt_generator(self.template, **self.model_dump(exclude={"template"}))
