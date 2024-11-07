@@ -7,7 +7,7 @@ Starting in Beehive `v0.0.1`, `BeehiveAgents` are capable of using *reasoning* t
 
 Reasoning can be accomplished via internal loops, response models, and termination conditions. These are controlled via the following attributes:
 
-- **`response_model`**: a Pydantic `BaseModel` that specifies the schema for the agent's output. When specified, Beehive prompts the agent's model to only return output that adheres to the model's schema. This response model enables the agent to take conditional action based on the values of certain fields.
+- **`response_model`**: a Pydantic `BaseModel` that specifies the schema for the agent's output. This response model enables the agent to take conditional action based on the values of certain fields.
 - **`chat_loop`**: number of times the model should loop when responding to a task.
 - **`termination_condition`**: condition which, if met, breaks the BeehiveAgent out of the chat loop. This should be a function that takes a `response_model` instance as input.
 
