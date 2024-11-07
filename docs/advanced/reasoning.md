@@ -1,6 +1,6 @@
 # Reasoning
 
-Starting in Beehive `v0.0.1`, `BeehiveAgents` are capable of using *reasoning* to accomplish their tasks.
+Starting in Beehive `v0.0.2`, `BeehiveAgents` are capable of using *reasoning* to accomplish their tasks.
 
 !!! warning
     Only `BeehiveAgents` are currently capable of reasoning. `BeehiveLangchainAgents` are not.
