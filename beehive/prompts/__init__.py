@@ -203,14 +203,3 @@ class EnsembleLLMSummaryPrompt(BHPrompt):
     num_agents: str
     task: str
     final_answer: str
-
-
-REASONING_PROMPT: str = load_template(PROMPT_DIR / "reasoning_prompt.txt")
-
-
-class ReasoningPrompt(BHPrompt):
-    template: str = REASONING_PROMPT
-    backstory: str
-    tools: str
-    step_output_schema: str
-    step_budget: str
