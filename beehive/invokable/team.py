@@ -15,7 +15,6 @@ from beehive.invokable.types import AnyChatModel, AnyMessageSequence
 from beehive.invokable.utils import _construct_bh_tools_map, _convert_messages_to_string
 from beehive.message import BHMessage, BHToolMessage
 from beehive.models.base import BHChatModel
-from beehive.prompts import AgentSystemMessagePrompt
 from beehive.tools.base import BHTool
 from beehive.tools.types import DocstringFormat
 from beehive.utilities.printer import Printer
@@ -192,12 +191,7 @@ class AgentTeam(Invokable):
             for i in range(1, self.num_members + 1):
                 new_agent = BeehiveAgent(
                     name=f"{self.name}-{i}",
-                    backstory=AgentSystemMessagePrompt(
-                        backstory=self.backstory,
-                        response_model_schema=json.dumps(self.response_model.schema())
-                        if self.response_model
-                        else None,
-                    ).render(),
+                    backstory=self.backstory,
                     model=self.model,
                     tools=self.tools,
                     response_model=self.response_model,
