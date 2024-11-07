@@ -578,5 +578,5 @@ def test_agent_response_model_bad_output_yes_pass_back_model_errors(
         assert len(reasoning_agent.state) == 6
         assert isinstance(reasoning_agent.state[4], BHMessage)
         assert reasoning_agent.state[4].role == MessageRole.SYSTEM
-        expected_msg = "Encountered a JSONDecodeError with the following content: <content>This is a poorly formatted output.</content>. **All output must be formatted according to the JSON schema described in the instructions**. Do not make this same mistake again."
+        expected_msg = "Encountered a `JSONDecodeError` / Pydantic `ValidationError` with the following content: <content>This is a poorly formatted output.</content>. **All output must be formatted according to the JSON schema described in the instructions**. Do not make this same mistake again."
         assert reasoning_agent.state[4].content == expected_msg
