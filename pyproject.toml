@@ -1,6 +1,58 @@
 [build-system]
-requires = ["setuptools>=41.1.0", "wheel"]
+# Keep generated metadata compatible with the pinned Twine 5 publishing tools.
+requires = ["setuptools>=64,<77", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "beehive-ai"
+version = "0.0.2"
+description = "🐝 Create powerful, collaborative AI applications."
+readme = "README.md"
+requires-python = ">=3.11"
+license = {text = "Apache-2.0"}
+authors = [{name = "Mihir Trivedi", email = "mtrivedi50@gmail.com"}]
+classifiers = ["Programming Language :: Python :: 3.12"]
+dependencies = [
+    "Jinja2==3.1.4",
+    "openai==1.40.5",
+    # Compatibility with the pinned OpenAI and Chroma SDKs (from Pipfile.lock).
+    "httpx==0.27.2",
+    "posthog==3.7.0",
+    "pydantic==2.8.2",
+    "pydantic-settings==2.5.2",
+    "pydantic_core==2.20.1",
+    "rich==13.7.1",
+    "SQLAlchemy==2.0.32",
+    "sqlmodel==0.0.21",
+    "chromadb==0.5.11",
+    "langchain==0.3.1",
+    "langchain-community==0.3.1",
+    "langchain-core==0.3.6",
+    "langchain-experimental==0.3.2",
+    "langchain-openai==0.2.1",
+    "langchain-text-splitters==0.3.0",
+    "nltk==3.9.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "mypy>=1.11",
+    "pytest>=7",
+    "mkdocs==1.6.1",
+    "mkdocs-material==9.5.39",
+    "sqlalchemy2-stubs==0.0.2a38",
+    "pre-commit==3.8.0",
+    "twine==5.1.1",
+    "build==1.2.2.post1",
+    "ipykernel==6.29.5",
+]
+
+[dependency-groups]
+dev = ["beehive-ai[dev]"]
+
+[tool.setuptools.packages.find]
+include = ["beehive", "beehive.*"]
+namespaces = false
 
 [tool.mypy]
 mypy_path = "src"

@@ -61,6 +61,8 @@ class BeehiveAgent(Agent):
         description="Pydantic BaseModel defining the desired schema for the agent's output. When specified, Beehive will prompt the agent to make sure that its responses fit the models's schema. Default is `None`.",
         default=None,
     )
+    structured_output_retries: int = Field(default=2, ge=0)
+
     termination_condition: Callable[..., bool] | None = Field(
         description="Condition which, if met, breaks the BeehiveAgent out of the chat loop. This should be a function that takes a `response_model` instance as input. Default is `None`.",
         default=None,
@@ -170,7 +172,20 @@ class BeehiveAgent(Agent):
             # Chat with model. Wrap this in a try-except block so that we can pass the
             # errors back to the model, if needed.
             try:
-                if not stream:
+                if self.response_model:
+                    iter_messages = self.model.chat(
+                        task_message if success_count == 0 else None,
+                        self.temperature,
+                        self._tools_map,
+                        self.state,
+                        self.response_model,
+                        self.structured_output_retries,
+                    )
+                    if stream and verbose:
+                        printer.print_invokable_output(
+                            completion_messages=iter_messages
+                        )
+                elif not stream:
                     iter_messages = self.model.chat(
                         task_message if success_count == 0 else None,
                         self.temperature,
@@ -186,23 +201,11 @@ class BeehiveAgent(Agent):
                         printer,
                     )
 
-                # If the user has specified a response model, confirm that the output of
-                # the first message adheres to that schema. Note that we only need to
-                # look at the first message, since anything beyond that will be tool
-                # calls.
-                if self.response_model:
-                    # Mypy
-                    if not self.termination_condition:
-                        raise ValueError(
-                            "Agents that use a `chat_loop` must use a `termination_condition` to control the loop flow."
-                        )
-                    # This will trigger some sort of validation error or
-                    # JSONDecodeError, which we can then use to re-prompt the agent.
-                    if iter_messages[0].content:
-                        response_obj = self.response_model(
-                            **json.loads(iter_messages[0].content)
-                        )
-                        flag_terminate = self.termination_condition(response_obj)
+                if self.response_model and self.termination_condition:
+                    response = iter_messages[-1]
+                    if not isinstance(response, BHMessage) or response.parsed is None:
+                        raise TypeError("Expected a validated structured response")
+                    flag_terminate = self.termination_condition(response.parsed)
 
                 self.state.extend(iter_messages)
                 all_messages.extend(iter_messages)
@@ -225,6 +228,8 @@ class BeehiveAgent(Agent):
                             ""
                         )  # to make sure there is a new line after each step
             except (json.decoder.JSONDecodeError, ValidationError):
+                if self.response_model:
+                    raise
                 total_count += 1
                 if total_count > retry_limit:
                     printer.print_standard(

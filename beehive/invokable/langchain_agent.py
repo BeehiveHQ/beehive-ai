@@ -172,7 +172,10 @@ class BeehiveLangchainAgent(Agent, LangchainMixin):
 
             try:
                 iter_messages: BaseMessage | list[BaseMessage] = self.model.invoke(
-                    self.state, config=self.config, stop=self.stop, **self.model_extra
+                    self.state,
+                    config=self.config,
+                    stop=self.stop,
+                    **(self.model_extra or {}),
                 )
                 if not isinstance(iter_messages, list):
                     iter_messages = [iter_messages]

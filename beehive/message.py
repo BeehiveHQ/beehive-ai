@@ -7,17 +7,17 @@ from beehive.tools.base import BHToolCall
 
 
 class MessageRole(StrEnum):
-    SYSTEM: str = "system"
-    USER: str = "user"
-    ASSISTANT: str = "assistant"
+    SYSTEM = "system"
+    USER = "user"
+    ASSISTANT = "assistant"
 
     # This type enables us to distinguish context messages from other assistant
     # messages.
-    CONTEXT: str = "context"
+    CONTEXT = "context"
 
     # This type enables us to distinguish question messages from other assistant
     # messages.
-    QUESTION: str = "question"
+    QUESTION = "question"
 
 
 class BHMessage(BaseModel):
@@ -25,6 +25,7 @@ class BHMessage(BaseModel):
         description="The message's role. The role can take one of three values: `system`, `user`, or `assistant`."
     )
     content: str = Field(description="The message's content.")
+    parsed: BaseModel | None = Field(default=None, exclude=True)
     tool_calls: list[BHToolCall] = Field(
         default_factory=list,
         description="List of tool calls made by the agent. Default is [].",

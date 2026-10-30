@@ -105,9 +105,15 @@ class FeedbackStorage:
             )
             # Grab feedback
             ids: list[str] = []
-            for metadatas in similar_tasks_results["metadatas"]:
+            task_metadatas = similar_tasks_results["metadatas"]
+            if task_metadatas is None:
+                return None
+            for metadatas in task_metadatas:
                 for feedback_dict in metadatas:
-                    ids.extend(feedback_dict["feedback_ids"].split(" || "))
+                    feedback_ids = feedback_dict["feedback_ids"]
+                    if not isinstance(feedback_ids, str):
+                        raise TypeError("Expected feedback_ids metadata to be a string")
+                    ids.extend(feedback_ids.split(" || "))
             res = feedback_collection.get(
                 ids=ids,
                 where={

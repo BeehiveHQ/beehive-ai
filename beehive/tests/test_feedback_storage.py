@@ -61,14 +61,16 @@ def test_embed_and_record_feedback(
 
     # Tasks collection should contain the task
     task_output = test_feedback_storage.client.get_collection("tasks").query(
-        query_embeddings=[[0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]],
+        query_embeddings=[0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0],
         where={
             "invokable": test_agent.name,
         },
     )
     task_documents = task_output["documents"]
     task_metadatas = task_output["metadatas"]
+    assert task_documents is not None
     assert len(task_documents) > 0
+    assert task_metadatas is not None
     assert len(task_metadatas) > 0
     assert "This is an example task." in task_documents[0]
 
@@ -80,12 +82,13 @@ def test_embed_and_record_feedback(
 
     # Feedback collection
     feedback_output = test_feedback_storage.client.get_collection("feedback").query(
-        query_embeddings=[[0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]],
+        query_embeddings=[0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0],
         where={
             "task": task_id,
         },
     )
     fb_documents = feedback_output["documents"]
+    assert fb_documents is not None
     assert len(fb_documents) > 0
     assert "Suggestion 1" in fb_documents[0]
     assert "Suggestion 2" in fb_documents[0]
@@ -98,6 +101,7 @@ def test_embed_and_record_feedback(
     )
     assert similar_results
     similar_fb_documents = similar_results["documents"]
+    assert similar_fb_documents is not None
     assert len(similar_fb_documents) > 0
     assert "Suggestion 1" in similar_fb_documents
     assert "Suggestion 2" in similar_fb_documents

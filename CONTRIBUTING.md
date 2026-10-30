@@ -7,15 +7,20 @@ Thank you for your interest in contributing to this project! Here’s a quick gu
 - Please ensure your PR is associated with an existing issue, bug, or feature request. If none exist, feel free to create one first for discussion.
 
 ## Development Setup
-You can set up the development environment using the provided Makefile. Simply run:
+Install [uv](https://docs.astral.sh/uv/getting-started/installation/), then run:
 
 ```bash
 make setup
 ```
 
-Note that this **only works on OSX**. Additional Makefile commands are incoming for folks using Windows and Linux machines.
+This creates a Python 3.12 virtual environment in `.venv`, installs the locked
+runtime and development dependencies, and installs Git hooks. On Windows, or
+without Make, run `uv sync --locked` and `uv run --locked pre-commit install`.
 
-This will install all necessary dependencies and prepare your environment for development.
+Run commands with `uv run` (for example, `uv run pytest beehive/tests/ tests/`).
+Use `uv add PACKAGE` for runtime dependencies and `uv add --dev PACKAGE`
+for development tools. Commit both `pyproject.toml` and `uv.lock` after dependency
+changes. The existing `dev` extra remains available for pip users.
 
 ## Submitting a PR
 - Fork the repository and create your feature branch.

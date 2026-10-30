@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import get_args
 from unittest import mock
 
 import pytest
@@ -296,9 +296,9 @@ def test_beehive_no_route(test_storage, test_feedback_storage, test_printer):
             next_agent_actor = bh.create_next_agent_actor_pydantic_class(
                 [x.name for x in next_agents]
             )
-            assert (
-                next_agent_actor.model_fields["agent"].annotation
-                == Literal["TestAgent2", "FINISH"]
+            assert get_args(next_agent_actor.model_fields["agent"].annotation) == (
+                "TestAgent2",
+                "FINISH",
             )
 
             # Router invokation -- this should fail because of a bad output

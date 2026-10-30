@@ -1,3 +1,9 @@
-recursive-include . *.yml *.yaml
+include mkdocs.yml
+recursive-include .github *.yml *.yaml
 recursive-include docs *.md *.png
 recursive-include beehive/prompts *.txt *.svg *.exists *.ico *.txt *.ipynb *.py *.sql *.yml *.html *.md .gitkeep .gitignore
+
+prune .venv
+prune build
+prune dist
+prune .git

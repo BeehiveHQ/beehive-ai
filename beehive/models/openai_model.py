@@ -1,8 +1,8 @@
 import json
 from collections import defaultdict
-from typing import Iterable, Optional, Tuple
+from typing import Any, Iterable, Literal, Optional, Tuple
 
-from pydantic import PrivateAttr
+from pydantic import BaseModel, PrivateAttr
 
 from beehive.message import BHMessage, BHToolMessage, MessageRole
 from beehive.models.base import BHChatModel
@@ -44,6 +44,86 @@ class OpenAIModel(BHChatModel):
     """
 
     _client: OpenAI = PrivateAttr()
+    structured_output_mode: Literal["auto", "native", "tool"] = "auto"
+
+    def _structured_completion(
+        self,
+        response_model: type[BaseModel],
+        temperature: int,
+        tools: dict[str, BHTool],
+        conversation: list[BHMessage | BHToolMessage],
+    ) -> str:
+        # The SDK normalizes nested objects, references, and required fields for
+        # OpenAI's strict JSON Schema subset without changing the Pydantic model.
+        from openai import BadRequestError
+        from openai.lib._pydantic import to_strict_json_schema
+
+        # Reserve a name to distinguish final output from executable tools.
+        name = "beehive_structured_output"
+        if name in tools:
+            raise ValueError(f"Tool name {name!r} is reserved for structured outputs")
+
+        # Auto mode tries native schema enforcement before falling back to tools.
+        mode = self.structured_output_mode
+        native = mode != "tool"
+        schema = (
+            to_strict_json_schema(response_model)
+            if native
+            else response_model.model_json_schema()
+        )
+
+        # Bound tool execution independently from validation retries.
+        for _ in range(10):
+            response_format = None
+            output_schema = None
+            if native:
+                response_format = {
+                    "type": "json_schema",
+                    "json_schema": {"name": name, "strict": True, "schema": schema},
+                }
+            else:
+                # Deliver final JSON through a synthetic tool instead of text.
+                output_schema = response_model.model_json_schema()
+            try:
+                messages = self.call_completions_api(
+                    temperature,
+                    tools,
+                    conversation,
+                    response_format=response_format,
+                    output_schema=output_schema,
+                )
+            except BadRequestError as exc:
+                body = exc.body if isinstance(exc.body, dict) else {}
+                error = body.get("error", body)
+
+                # If we are in "auto" mode and the response format is unsupported, then
+                # try again with the explicit tool fallback.
+                if (
+                    mode == "auto"
+                    and native
+                    and error.get("param")
+                    in ("response_format", "response_format.type")
+                    and (
+                        error.get("code") == "unsupported_value"
+                        or "not supported" in str(error.get("message", "")).lower()
+                    )
+                ):
+                    native = False
+                    continue
+
+                # All other errors (invalid schemas, authentication, and transport
+                # errors) should be raised.
+                raise
+
+            response = messages[0]
+            if not isinstance(response, BHMessage):
+                raise TypeError("Expected an assistant message from the completion")
+            if response.tool_calls:
+                # Feed ordinary tool results into the next turn before final output.
+                conversation.extend(messages)
+                continue
+            return response.content
+        raise RuntimeError("Exceeded structured output tool turn limit (10)")
 
     def _create_client(self, **client_kwargs) -> OpenAI:
         return OpenAI(**client_kwargs)
@@ -108,27 +188,64 @@ class OpenAIModel(BHChatModel):
         temperature: int,
         tools: dict[str, BHTool],
         conversation: list[BHMessage | BHToolMessage],
+        *,
+        response_format: dict[str, Any] | None = None,
+        output_schema: dict[str, Any] | None = None,
     ) -> list[BHMessage | BHToolMessage]:
-        # Call the Completions API. For some reason, chat.completions.create doesn't
-        # like `None` in `tools`.
-        completion: ChatCompletion = self._client.chat.completions.create(  # type: ignore  # type: ignore
-            model=self.model,
-            temperature=temperature,
-            tools=[v.derive_json_specification() for _, v in tools.items()]  # type: ignore
-            if tools
-            else None,
-            messages=[c.msg for c in conversation],
-        )
-        content = completion.choices[0].message.content
-        tool_calls = completion.choices[0].message.tool_calls
-
-        # Convert completion to a list of messages
-        completion_messages = self.convert_completion_to_messages(
-            content, [] if tool_calls is None else tool_calls, tools
-        )
-
-        # Return messages from this completion
-        return completion_messages
+        """Send one completion, extracting synthetic output before tool execution."""
+        specs = [tool.derive_json_specification() for tool in tools.values()]
+        kwargs: dict[str, Any] = {
+            "model": self.model,
+            "temperature": temperature,
+            "messages": [message.msg for message in conversation],
+        }
+        name = "beehive_structured_output"
+        if response_format is not None:
+            kwargs["response_format"] = response_format
+        if output_schema is not None:
+            # This tool carries the final response; it is never executed.
+            specs.append(
+                {
+                    "type": "function",
+                    "function": {
+                        "name": name,
+                        "description": "Return the final structured response.",
+                        "parameters": output_schema,
+                    },
+                }
+            )
+            kwargs["tool_choice"] = "required"
+        kwargs["tools"] = specs or None
+        completion: ChatCompletion = self._client.chat.completions.create(**kwargs)
+        message = completion.choices[0].message
+        calls = message.tool_calls or []
+        structured = response_format is not None or output_schema is not None
+        if structured:
+            # Refusals and unknown tools are provider errors, not validation errors.
+            if getattr(message, "refusal", None):
+                raise ValueError(f"Model refused structured output: {message.refusal}")
+            if output_schema is not None:
+                output_calls = [call for call in calls if call.function.name == name]
+                if output_calls:
+                    if len(calls) != 1:
+                        raise ValueError(
+                            "Expected exactly one structured output tool call"
+                        )
+                    return [
+                        BHMessage(
+                            role=MessageRole.ASSISTANT,
+                            content=output_calls[0].function.arguments,
+                        )
+                    ]
+            unknown = [
+                call.function.name for call in calls if call.function.name not in tools
+            ]
+            if unknown:
+                raise ValueError(f"Unknown tool calls: {unknown}")
+        # Missing fallback tool arguments must fail Pydantic validation, even if
+        # the provider returned valid JSON as plain text.
+        content = "" if output_schema is not None and not calls else message.content
+        return self.convert_completion_to_messages(content, calls, tools)
 
     def stream_completions_api(
         self,
@@ -219,22 +336,6 @@ class OpenAIModel(BHChatModel):
         # https://github.com/python/mypy/pull/17310
         completion_messages.extend(final_tool_messages)  # type: ignore
         return completion_messages
-
-    def chat(
-        self,
-        task_message: BHMessage | None,
-        temperature: int,
-        tools: dict[str, BHTool],
-        conversation: list[BHMessage | BHToolMessage],
-    ) -> list[BHMessage | BHToolMessage]:
-        if task_message:
-            if task_message.msg["role"] != MessageRole.USER:
-                raise ValueError(
-                    f"Invalid `task_message` role. Expected 'user', found '{task_message.msg["role"]}'."
-                )
-            if task_message not in conversation:
-                conversation.append(task_message)
-        return self.call_completions_api(temperature, tools, conversation)
 
     def stream(
         self,

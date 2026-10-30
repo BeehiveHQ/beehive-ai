@@ -6,11 +6,25 @@ on:
       - main
     paths:
       - 'beehive/**'
+      - 'tests/**'
+      - 'pyproject.toml'
+      - 'uv.lock'
+      - '.python-version'
+      - 'setup.cfg'
+      - 'Makefile'
+      - '.github/workflows/**'
   pull_request:
     branches:
       - main
     paths:
       - 'beehive/**'
+      - 'tests/**'
+      - 'pyproject.toml'
+      - 'uv.lock'
+      - '.python-version'
+      - 'setup.cfg'
+      - 'Makefile'
+      - '.github/workflows/**'
 
 env:
   OPENAI_API_KEY: test
@@ -20,13 +34,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - name: Set up Python
-      uses: actions/setup-python@v2
+    - name: Set up uv
+      uses: astral-sh/setup-uv@v6
       with:
-        python-version: "3.12"
+        version: "0.7.20"
+        enable-cache: true
     - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install ".[dev]"
+      run: uv sync --locked
     - name: Tests
-      run: pytest beehive/tests -v
+      run: uv run --locked pytest beehive/tests tests -v

@@ -86,3 +86,48 @@ Note that this Beehive uses two `BeehiveAgents`, which are one of the more basic
 ## Documentation
 
 Please check out the documentation [here](https://beehivehq.github.io/beehive-ai/) to get started!
+
+### Pydantic structured outputs
+
+Pass a Pydantic model class as an agent's existing `response_model`:
+
+```python
+from pydantic import BaseModel, Field
+from beehive.invokable.agent import BeehiveAgent
+from beehive.models.openai_model import OpenAIModel
+
+class Answer(BaseModel):
+    summary: str
+    confidence: float = Field(ge=0, le=1)
+
+agent = BeehiveAgent(
+    name="Analyst",
+    model=OpenAIModel(model="gpt-4o-2024-08-06"),
+    response_model=Answer,
+    structured_output_retries=2,
+)
+result = agent.invoke("Explain why the sky is blue.")
+answer = result["messages"][-1].parsed  # An Answer instance
+```
+
+OpenAI uses strict native JSON Schema output by default. In `auto` mode,
+an explicit provider rejection of the response format triggers a synthetic
+output-tool fallback. Use `structured_output_mode="tool"` for a provider known
+to lack native support, or `"native"` to disable fallback. Invalid schemas and
+unrelated API errors do not trigger fallback.
+
+Every final response is validated with `model_validate_json`, including custom
+Pydantic validators. `structured_output_retries` counts additional attempts
+(default: two); exhausted validation errors propagate even when general model
+error retries are enabled. A termination condition is only required for multiple
+chat loops. Ordinary tools remain available, with a limit of ten tool turns per
+attempt. Structured responses are buffered before printing, including with
+`stream=True`. JSON content remains available for storage and context;
+the validated instance is in `BHMessage.parsed`.
+
+Custom `BHChatModel` providers can implement `_structured_completion` to reuse
+the provider-independent validation and retry loop.
+
+For direct model calls, use `model.chat(..., response_model=Answer, max_retries=2)`.
+Omit `response_model` for ordinary chat. Both paths share the OpenAI
+`call_completions_api` request and message conversion code.
